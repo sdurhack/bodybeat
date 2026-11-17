@@ -7,7 +7,7 @@ a laptop, or in tests.
       -> invert (transmitted light DROPS when blood arrives)
       -> adaptive-threshold peak detection with refractory period
       -> BPM = median of recent beat intervals
-    motion (accel magnitude away from 1 g) blanks beats for a short time.
+    optical motion artifacts (abrupt light changes) blank beats briefly.
 """
 import math
 from collections import deque
@@ -243,11 +243,6 @@ class PulseDetector:
             self.bpm = a                # they disagree: trust the periodicity
             self.ibis.clear()           # let the peak tracker re-lock at the right rate
             self.bpm_peaks = None
-
-
-def accel_motion(ax, ay, az):
-    """How far the accel magnitude (in g) is from 1 g. ~0 when still."""
-    return abs(math.sqrt(ax * ax + ay * ay + az * az) - 1.0)
 
 
 class MultiChannel:

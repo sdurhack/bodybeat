@@ -251,9 +251,6 @@ def sim_unoq(ctx, now, links):
     out = []
     for msg, addr in ctx.get("inbox", []):  # relayed Nicla state -> mood + presence, as on the board
         b.on_packet(msg, addr, now)
-    shake = 0.6 * max(0.0, math.sin(t / 6.0)) ** 6
-    b.on_env(0.4 * math.sin(t / 4.0) + random.gauss(0, shake),
-             0.4 * math.cos(t / 9.0), 1 + random.gauss(0, shake), int(t // 12) * 2, False)
     # SIM pulse: no lock for the first 8 s (default tempo), then a fake heart
     heart = 72 + 22 * (0.5 + 0.5 * math.sin(t / 25.0))
     locked = t > 8

@@ -18,7 +18,6 @@ LINK_TIMEOUT = 2.5  # seconds of silence before a peer counts as offline
 HEART_TIMEOUT = 5.0  # seconds without a pulse before the band clock free-runs
 DEFAULT_BPM = 80.0  # tempo before the first real pulse lock: always labelled "default"
 VISION_TIMEOUT = 2.5  # seconds without a fresh Nicla state before vision counts as stale
-INSTRUMENTS = ["glass", "pluck", "lead", "choir"]
 MOODS = ["night", "dusk", "day"]  # dark room = minor ... bright room = major
 BOOT = random.randint(1, 1 << 30)  # changes every restart, so peers reset seq tracking
 
@@ -70,34 +69,6 @@ class Mood:
             i = 1
         self.index = i
         return MOODS[i]
-
-
-class Intensity:
-    """Movement -> 0..1. Fast attack, slow release, so a flick of the wrist
-    lifts the music at once and it settles over a few seconds."""
-
-    def __init__(self, full_g=0.6, attack=0.5, release=0.02):
-        self.value = 0.0
-        self.full_g = full_g
-        self.attack = attack
-        self.release = release
-
-    def __call__(self, ax, ay, az):
-        g = abs(math.sqrt(ax * ax + ay * ay + az * az) - 1.0)
-        target = clamp(g / self.full_g, 0.0, 1.0)
-        k = self.attack if target > self.value else self.release
-        self.value += (target - self.value) * k
-        return self.value
-
-
-def tilt(ax, ay, az):
-    """Accel (g) -> tilt (-1..1, -1..1). Used to steer the melody up/down."""
-    return clamp(ax, -1.0, 1.0), clamp(ay, -1.0, 1.0)
-
-
-def instrument_for(knob_count, step=2):
-    """Knob position -> instrument name. `step` = encoder counts per click."""
-    return INSTRUMENTS[(int(knob_count) // max(1, step)) % len(INSTRUMENTS)]
 
 
 class BandClock:
@@ -342,27 +313,13 @@ class UnoQBrain:
     """Everything the UNO Q decides, from raw sensor values to the packets it
     sends. main.py feeds it; tests drive it with fake time."""
 
-    def __init__(self, seeds=(), knob_step=2):
-        self.intensity = Intensity()
+    def __init__(self, seeds=()):
         self.vision = Vision()
         self.seqs = SeqFilter()
         self.clock = BandClock()
         self.peers = Peers("unoq", seeds)
-        self.knob_step = knob_step
         self.seq = 0
-        self.env = dict(intensity=0.0, tilt=[0.0, 0.0],
-                        instrument=INSTRUMENTS[0], knob=0, breakdown=False)
         self.pulse = {"status": "searching"}  # filled in by main.py from the Light pipeline
-        self._pressed = False
-
-    def on_env(self, ax, ay, az, knob, pressed):
-        """Movement (g) + Knob from the MCU. Room light now comes from the Nicla."""
-        if pressed and not self._pressed:  # knob press toggles a breakdown
-            self.env["breakdown"] = not self.env["breakdown"]
-        self._pressed = bool(pressed)
-        self.env.update(intensity=round(self.intensity(ax, ay, az), 3),
-                        tilt=[round(v, 2) for v in tilt(ax, ay, az)],
-                        instrument=instrument_for(knob, self.knob_step), knob=int(knob))
 
     def on_packet(self, msg, addr, now):
         """Returns False for a duplicate / out-of-order state packet (ignored)."""
@@ -383,7 +340,7 @@ class UnoQBrain:
         self.seq += 1
         c, v = self.clock, self.vision
         fresh = v.fresh(now)
-        return dict(self.env, **{
+        return {
             "from": "unoq", "type": "state", "seq": self.seq, "boot": BOOT,
             # musical tempo (band clock) and where it comes from: heart / held / default
             "bpm": round(c.bpm, 1), "beat": c.index, "tempo_source": c.tempo_source(now),
@@ -404,7 +361,7 @@ class UnoQBrain:
             "vision_fresh": fresh,
             "vision_age": round(now - v.t, 1) if v.t > 0 else None,
             "nicla_path": v.via if fresh else "none",
-            "links": self.peers.links(now)})
+            "links": self.peers.links(now)}
 
     def beat(self, index):
         return {"from": "unoq", "type": "beat", "beat": index, "bpm": round(self.clock.bpm, 1),

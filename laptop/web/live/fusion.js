@@ -2,7 +2,7 @@
 // Pure JS, no DOM: tests/test_web_live.mjs runs it in Node.
 //
 // Sources (each optional, each judged fresh by OUR receipt time):
-//   unoq   breadboard via the conductor (SSE): finger pulse tempo, Movement, Knob
+//   unoq   breadboard via the conductor (SSE): finger pulse tempo and beat clock
 //   nicla  over USB (Web Serial) or WiFi: nicla_web sketch, camera motion, mic level, claps (no model)
 //   face   face-api expressions on the Nicla camera's picture (USB), or the laptop webcam
 //   cam    laptop webcam (optional): POS webcam pulse, face present, motion
@@ -13,7 +13,7 @@
 //   key     face-api expressions (Nicla camera or webcam), summed per key, smoothed,
 //           a frame counts only if its leading key has >= 55%, change needs a 0.15 lead
 //   drums   pattern 0..3 from max(motion, sound above background), with hysteresis
-//   melody  intensity/tilt/instrument from the UNO Q; without it, intensity = motion
+//   melody  intensity follows Nicla camera motion and sound; fixed lead voice
 //   band    fades to quiet backing when no camera sees a face for FACE_AWAY_MS
 
 export const STALE_MS = 2500, HEART_MS = 5000, FACE_AWAY_MS = 10000;
@@ -144,16 +144,12 @@ export class Brain {
     if (this.demo != null) heart = { bpm: this.demo, from: "demo", quality: 1 };
     else if (uOn && u.heart_live && Number.isFinite(u.heart_bpm)) heart = { bpm: u.heart_bpm, from: "finger pulse (UNO Q)", quality: 1 };
     else if (this.fresh(this.cam.pulseT, now, HEART_MS)) heart = { bpm: this.cam.pulse.bpm, from: "webcam pulse", quality: clamp(this.cam.pulse.quality ?? 0.5, 0, 1) };
-    const moveFresh = (uOn && Number.isFinite(u.intensity)) || nOn || this.fresh(this.cam.motionT, now) || this.fresh(this.mic.t, now);
+    const moveFresh = nOn || this.fresh(this.cam.motionT, now) || this.fresh(this.mic.t, now);
 
-    const haveU = this.unoq.t > -1e9;
     return {
-      heart, movement: moveFresh ? (uOn && Number.isFinite(u.intensity) ? Math.max(u.intensity, this.energy) : this.energy) : null,
+      heart, movement: moveFresh ? this.energy : null,
       bpm: this.bpm, mood: mood || "dusk", pattern: this.pattern, presence,
-      intensity: haveU && Number.isFinite(u.intensity) ? u.intensity : clamp(this.energy * 1.2, 0.15, 1),
-      tilt: haveU && u.tilt ? u.tilt : [0, 0],
-      instrument: haveU && u.instrument ? u.instrument : "glass",
-      breakdown: haveU ? !!u.breakdown : false,
+      intensity: clamp(this.energy * 1.2, 0.15, 1),
     };
   }
 }

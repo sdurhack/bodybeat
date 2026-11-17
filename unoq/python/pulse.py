@@ -3,13 +3,13 @@
 The MCU sketch sends one Bridge "ppg" call per FRESH sensor measurement
 (it polls the chip's data-ready flag), with the MCU timestamp in ms:
 
-    t_ms, ir, red, green, blue, ax, ay, az
+    t_ms, ir, red, green, blue
 
 This module only lets a sample reach the pulse detector if it is believable:
   * timestamps must move forward (repeats = the same measurement twice: dropped)
   * near-zero channels are ignored (ppg.MultiChannel.MIN_LEVEL)
   * saturated channels (>= 98% of the 16-bit range) are ignored for 2 s
-  * movement (Modulino Movement) or a sudden jump in light blanks beats
+  * a sudden jump in light from finger slip blanks beats
   * no fresh sample for STALE_S seconds = stale: detector reset, "searching"
 
 It reports a measured heart rate ONLY when ppg's autocorrelation gate has
@@ -39,7 +39,7 @@ class LightPulse:
         self.motion = 0.0
         self.levels = {}
 
-    def add(self, t_ms, ir, r, g, b, ax=0.0, ay=0.0, az=1.0, now=None):
+    def add(self, t_ms, ir, r, g, b, now=None):
         """Feed one sample. Returns a list of beat times (validated or not:
         callers should only announce beats when .bpm is not None)."""
         now = time.time() if now is None else now
@@ -48,7 +48,7 @@ class LightPulse:
             self.dropped_repeat += 1     # duplicate or out-of-order: not a new measurement
             return []
         values = {"ir": float(ir), "red": float(r), "green": float(g), "clear": float(r) + float(g) + float(b)}
-        motion = ppg.accel_motion(ax, ay, az)
+        motion = 0.0  # optical artifact rejection without an accelerometer
         if self.prev is not None:
             for n in ("ir", "red", "green"):
                 p = self.prev[n]

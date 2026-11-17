@@ -1,10 +1,9 @@
 """Body Beat, actor 2: the UNO Q. Runs in App Lab on the board, or on a laptop with --sim.
 
 Senses:   Modulino Light + steady red LED = fingertip pulse (Bridge "ppg", raw 16-bit counts)
-          Modulino Movement = melody intensity + tilt, Modulino Knob = instrument / breakdown
           Nicla camera state over UDP :7100 = room brightness (mood), person presence, motion
 Decides:  band tempo (follows a VALIDATED pulse; holds it on loss; 80 BPM labelled
-          "default" before the first lock), key/mood, presence, intensity, instrument
+          "default" before the first lock), camera-derived key/mood, presence
 Acts:     LED matrix (tempo + beat), breadboard LEDs (beat, mood, link status),
           and tells the rest of the band over UDP :7100
 
@@ -15,7 +14,6 @@ LED keep going at the last tempo and the status LEDs blink.
                                 empty = try broadcast discovery, works only if the container
                                 can send/receive broadcasts)
     BB_PORT=7100                UDP port this board listens on
-    BB_KNOB_STEP=2              encoder counts per knob click
 
 Laptop test:  BB_PORT=7110 HB_PORT=7005 BB_PEERS=127.0.0.1:7100 python main.py --sim
 """
@@ -58,10 +56,10 @@ def _peers_default():
 SEEDS = [s.strip() for s in _peers_default().split(",") if s.strip()]
 HTTP_PORT = int(os.environ.get("HB_PORT", 7000))
 
-brain = band.UnoQBrain(SEEDS, knob_step=int(os.environ.get("BB_KNOB_STEP", 2)))
+brain = band.UnoQBrain(SEEDS)
 lock = threading.Lock()
 light = pulse.LightPulse()
-diag = {"light_found": None, "reads": None, "mcu_rate": None, "env_calls": 0, "ppg_calls": 0}
+diag = {"light_found": None, "reads": None, "mcu_rate": None, "ppg_calls": 0}
 counters = {"rx": 0, "dup": 0}
 # demo mode (the page's Demo buttons): a forced heart rate, refreshed by every "show" packet
 demo = {"bpm": None, "until": 0.0}
@@ -98,19 +96,12 @@ def send(msg):
 
 # ---- inputs from the MCU ---------------------------------------------------
 
-def on_env(t_ms, ax, ay, az, knob, pressed):
-    """Movement + Knob, ~20 Hz."""
-    diag["env_calls"] += 1
-    with lock:
-        brain.on_env(float(ax), float(ay), float(az), int(knob), bool(pressed))
-
-
-def on_ppg(t_ms, ir, r, g, b, ax=0.0, ay=0.0, az=1.0):
+def on_ppg(t_ms, ir, r, g, b):
     """One FRESH Light measurement (the sketch waits for data-ready)."""
     diag["ppg_calls"] += 1
     now = time.time()
     with lock:
-        beats = light.add(t_ms, ir, r, g, b, ax, ay, az, now=now)
+        beats = light.add(t_ms, ir, r, g, b, now=now)
         bpm = light.bpm
         if bpm and demo_bpm(now) is None:  # demo mode wins over the real finger
             brain.clock.heart(bpm, now)
@@ -222,11 +213,10 @@ def status_loop():
             server.STATE.publish("bpm", dict(server.STATE.snapshot(), pulse=p, tempo=st["bpm"],
                                              tempo_source=st["tempo_source"]))
             print("tempo=%.1f (%s) heart=%s pulse=[%s ch=%s %s Hz lvl=%s] mood=%s(%s via %s, face=%s %s) presence=%.0f "
-                  "int=%.2f inst=%s nicla=%s laptop=%s rx=%d dup=%d light_found=%s mcu_rate=%s" % (
+                  "nicla=%s laptop=%s rx=%d dup=%d light_found=%s mcu_rate=%s" % (
                       st["bpm"], st["tempo_source"], p["bpm"], p["status"], p["channel"], p["rate_hz"],
                       p["level"], st["mood"], st["mood_source"], st["mood_from"], st["face_mood"],
-                      st["face_confidence"], st["presence"], st["intensity"],
-                      st["instrument"], st["nicla_path"], links.get("laptop", False),
+                      st["face_confidence"], st["presence"], st["nicla_path"], links.get("laptop", False),
                       counters["rx"], counters["dup"], diag["light_found"], diag["mcu_rate"]),
                   flush=True)
         time.sleep(0.2)
@@ -235,19 +225,15 @@ def status_loop():
 # ---- simulation (no hardware) ----------------------------------------------
 
 def sim_loop():
-    """Fake Movement/Knob + a fake fingertip PPG at 40 Hz (labelled SIM in the log)."""
-    print("bodyband unoq: SIMULATION (fake Movement, Knob and Light PPG)", flush=True)
+    """Synthetic fingertip PPG at 40 Hz (labelled SIM in the log)."""
+    print("bodyband unoq: SIMULATION (synthetic Light PPG)", flush=True)
     t, phase = 0.0, 0.0
     while True:
-        shake = 0.5 * max(0.0, math.sin(t / 7.0)) ** 8      # a burst of movement every ~45 s
-        ax = 0.3 * math.sin(t / 5.0) + random.gauss(0, shake)
-        on_env(int(t * 1000), ax, random.gauss(0, shake), 1 + random.gauss(0, shake),
-               int(t // 15) * 2, False)
         bpm = 70 + 25 * (0.5 + 0.5 * math.sin(t / 30.0))
         for _ in range(2):
             phase = (phase + bpm / 60.0 / 40.0) % 1.0
             v = 20000 - 300 * math.exp(-((phase - 0.15) / 0.07) ** 2) + random.gauss(0, 10)
-            on_ppg(int(t * 1000), v, v * 0.8, v * 0.3, v * 0.2, 0.0, 0.0, 1.0)
+            on_ppg(int(t * 1000), v, v * 0.8, v * 0.3, v * 0.2)
             t += 0.025
         time.sleep(0.05)
 
@@ -256,7 +242,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sim", action="store_true")
     a = ap.parse_args()
-    print("bodyband unoq: udp :%d peers=%s default tempo %d BPM until a pulse locks" % (
+    print("bodybeat unoq: udp :%d peers=%s default tempo %d BPM until a pulse locks" % (
         PORT, SEEDS or "(broadcast discovery)", band.DEFAULT_BPM), flush=True)
     server.start(HTTP_PORT)
     for fn in (band_loop, clock_loop, status_loop, discovery_loop):
@@ -264,7 +250,6 @@ def main():
     if a.sim:
         threading.Thread(target=sim_loop, daemon=True).start()
     if Bridge is not None:
-        Bridge.provide("env", on_env)
         Bridge.provide("ppg", on_ppg)
         Bridge.provide("diag", on_diag)
         App.run()

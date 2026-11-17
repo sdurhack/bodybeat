@@ -1,12 +1,13 @@
-# Body Beat
+# bodybeat
 
-**A band that plays along with your body.** Your heartbeat sets the tempo, your face picks the key,
-your movement drives the drums and the melody, and a clap starts a drum fill. An Arduino UNO Q, a Nicla Vision
-and a laptop browser each play their part, and five LEDs run a light show on the beat.
+**A band powered by your body.** Your heartbeat sets the tempo, your facial expression picks the key,
+and movements in front of the Nicla Vision camera shape the drums and melody. A clap triggers a drum fill.
+The Arduino UNO Q, one Modulino Light, the Nicla Vision and a laptop browser each play a part.
+Five coloured LEDs run a light show on the UNO Q's beat; a separate red LED illuminates your fingertip.
 
 Built at DurHack 2026.
 
-![Body Beat wiring](docs/circuit.png)
+![bodybeat wiring, using only the actual hardware](docs/circuit.svg)
 
 There is also an interactive 3D model of the build: open [`docs/circuit3d.html`](docs/circuit3d.html) in a browser
 (download it first; GitHub shows it as source).
@@ -17,10 +18,8 @@ There is also an interactive 3D model of the build: open [`docs/circuit3d.html`]
 |---|---|---|
 | Rest a fingertip on the red LED | Modulino Light (pulse, 40 readings a second) | **Tempo** follows your heart rate, and holds it if your finger slips |
 | Make a face | Nicla Vision camera → expression model in the browser | **Key**: happy / surprised = C major, neutral = D dorian, sad / angry / fearful / disgusted = A minor |
-| Move in front of the camera | Nicla Vision (frame difference) | **Drums** get busier, from 4 patterns |
+| Move in front of the camera | Nicla Vision (frame difference) | **Drums** get busier, from 4 patterns; activity also shapes melody density |
 | Clap | Nicla Vision microphone | **Drum fill** |
-| Move or tilt the board | Modulino Movement | **Melody** energy and direction |
-| Turn / press the knob | Modulino Knob | **Instrument** / **breakdown** |
 | Walk away | no face for 10 s | The band drops to a quiet backing |
 
 The laptop browser is the only thing that makes sound (Web Audio: drums, bass, pads and leads, with reverb,
@@ -31,7 +30,7 @@ echo and a limiter). It can also play your own Spotify playlists, picking the en
 | Part | Notes |
 |---|---|
 | Arduino UNO Q | MCU half runs `unoq/sketch`, Linux half runs `unoq/python` (band clock, pulse) |
-| Modulino Light, Movement, Knob | One Qwiic chain: UNO Q → Light → Movement → Knob |
+| Modulino Light | One Qwiic cable: UNO Q → Modulino Light |
 | 5 LEDs + 220 Ω | D2 blue, D3 blue, D4 yellow, D5 green, D6 green: status lights, then the light show |
 | 1 red LED + 3 × 37 Ω in series | D7, always on: shines through the fingertip onto the Light sensor |
 | Arduino Nicla Vision | USB-C to the laptop. Camera picture, motion, mic. No model on the board |
@@ -49,7 +48,7 @@ arduino-cli compile -b arduino:mbed_nicla:nicla_vision nicla_web
 arduino-cli upload  -b arduino:mbed_nicla:nicla_vision -p COM11 nicla_web
 ```
 
-**2. UNO Q** (once): add `unoq/` to Arduino App Lab as an app, add the `Arduino_Modulino` library, and run it.
+**2. UNO Q** (once): connect only Modulino Light via Qwiic. Wire the five show LEDs to D2–D6 through 220 Ω series resistors and the red pulse LED to D7 through three 37 Ω resistors in series. Import `unoq/` into Arduino App Lab, add `Arduino_Modulino`, and run it.
 The board must know the laptop's address: put it in `unoq/python/peers.txt` (one address per line), or set `BB_PEERS`.
 Put the UNO Q and the laptop on the same WiFi.
 
@@ -61,7 +60,7 @@ python laptop/conductor.py --sim        # no hardware: a simulated UNO Q and Nic
 python laptop/conductor.py --peer <UNO Q IP>   # WiFi that blocks broadcasts
 ```
 
-Open **http://127.0.0.1:8000** in Chrome or Edge, click **Start the band**, then **Connect Nicla (USB)**.
+Open **http://127.0.0.1:8000** in Chrome or Edge, click **Start the band**, then **Connect Nicla (USB)**. Place a fingertip between the red LED and Light sensor; try facial expressions, camera movement and a clap.
 Optional: **Start mic**, **Send clock**, **Start webcam** (a webcam pulse stands in when there is no finger pulse).
 
 ## The face model
@@ -85,12 +84,12 @@ Instead of the generated band, Body Beat can play your own Spotify playlists on 
 your heart rate picks Warm-up, Steady (from 100 BPM) or High energy (from 135 BPM), and the playlist changes a few
 seconds after you enter a new range. It never skips a track or overrides your pause.
 
-1. Create an app at https://developer.spotify.com/dashboard (Web API) with the redirect URI `http://127.0.0.1:8000/live.html`.
+1. Create a Spotify app at https://developer.spotify.com/dashboard with the redirect URI `http://127.0.0.1:8000/live.html`. Select Web API as needed. A **Client ID** identifies the app; a **Client Secret must never be pasted into the browser or committed to GitHub**.
    Development-mode apps need a Premium account, and each listener added under *User Management*.
-2. Open http://127.0.0.1:8000/live.html, choose **Spotify**, paste your Client ID and click **Connect**.
-3. Open Spotify on a device, click **Refresh**, pick it, paste up to 4 playlist links and click **Play**.
+2. Run `python laptop/conductor.py` and open http://127.0.0.1:8000/live.html. Choose **Spotify**, paste **your own Spotify app Client ID** into the field, and click **Connect**. The browser uses Authorization Code with PKCE; it does not need a Client Secret.
+3. In the Spotify Developer Dashboard, add your Spotify user under the app’s **User Management** if the app is in development mode. Sign in with that user and a Spotify Premium account (required for playback control). Open Spotify on a phone or desktop, click **Refresh**, select the playback device, paste playlist links for Warm-up, Steady and High energy, then click **Play**. Heart rate selects the playlist level; the generated band resumes if Spotify stops.
 
-Sign-in uses Authorization Code + PKCE: there is no client secret, and tokens stay in that browser tab.
+**Credential safety:** sign-in uses Authorization Code + PKCE, not a Spotify Client Secret. Access and refresh tokens are stored in browser session storage for that tab, never in the repository. Do not commit Spotify keys, OAuth codes, tokens, `.env` files or personal credentials. A Client ID is a public identifier, but this repo does not ship a team member’s ID.
 
 ## How the pieces stay in time
 
@@ -110,7 +109,7 @@ unoq/sketch/               UNO Q MCU: sensors, LED matrix, light show
 unoq/python/               UNO Q Linux: band clock, pulse detection, networking
 nicla_web/                 Nicla Vision sketch: picture, motion, mic
 model/                     training notebook for the face model
-docs/                      wiring diagram (SVG/PNG) and the 3D model
+docs/                      corrected wiring diagram (SVG) and the 3D model
 tests/                     python tests/test_band.py · python tests/test_pulse.py · node tests/test_web_live.mjs
 ```
 

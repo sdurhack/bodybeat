@@ -57,22 +57,6 @@ def test_autorange_self_calibrates():
     assert a(5) < 0.1 and a(5000) > 0.9
 
 
-def test_intensity_attack_release():
-    i = band.Intensity()
-    for _ in range(5):
-        i(1.5, 0, 1)
-    assert i.value > 0.9
-    for _ in range(20):
-        i(0, 0, 1)
-    assert 0.3 < i.value < 0.9  # settles slowly
-
-
-def test_knob_wraps_instruments():
-    names = [band.instrument_for(k) for k in range(0, 10, 2)]
-    assert names == ["glass", "pluck", "lead", "choir", "glass"]
-    assert band.instrument_for(-2) == "choir"
-
-
 def test_peers_offline_and_gossip():
     p = band.Peers("unoq", ["192.168.137.1"])
     p.heard("laptop", ("192.168.137.1", 7100), 0.0)
@@ -86,17 +70,14 @@ def test_peers_offline_and_gossip():
     assert p.online("laptop", 10.5)
 
 
-def test_brain_state_and_breakdown_toggle():
+def test_brain_state_only_contains_used_hardware_data():
     b = band.UnoQBrain()
-    b.on_env(0, 0, 1, 4, False)
-    b.on_env(0, 0, 1, 4, True)
-    b.on_env(0, 0, 1, 4, True)  # held: no second toggle
     s = b.state(0.0)
-    assert s["breakdown"] is True and s["instrument"] == "lead" and s["from"] == "unoq"
+    assert s["from"] == "unoq" and s["pulse"]["status"] == "searching"
+    assert "knob" not in s and "tilt" not in s and "instrument" not in s and "breakdown" not in s
     msg = band.decode(band.encode(s))
     assert msg["seq"] == 1
     assert band.decode(b"garbage") is None
-
 
 # ---- source routing: Light = pulse, Nicla brightness = mood ----------------
 

@@ -1,17 +1,16 @@
 // Body Beat: UNO Q sketch (the MCU half of the board; python/main.py is the Linux half).
 //
 // Body Beat is a band that plays along with your body. This board reads a fingertip pulse,
-// a motion sensor and a knob, keeps the band's clock, and runs a five-LED light show on the beat.
+// keeps the band's clock, and runs a five-LED light show on the beat.
 //
 // What this sketch does (all decisions are made in python/, so tuning needs no reflash):
 //   * Pulse   Modulino Light, measuring continuously; every fresh reading goes to Python as "ppg"
-//             (~40 Hz): t_ms, ir, red, green, blue (raw 16-bit counts), ax, ay, az
-//   * Sensors Modulino Movement (g) and Modulino Knob, sent as "env" ~20 times a second
+//             (~40 Hz): t_ms, ir, red, green, blue (raw 16-bit counts)
 //   * Health  "diag" every 2 s: light sensor found, fresh readings so far, reading rate x10
 //   * Shows   the tempo and the beat on the LED matrix, and the light show on D2-D6
 //
 // Wiring
-//   Qwiic cable: UNO Q -> Modulino Light -> Modulino Movement -> Modulino Knob
+//   Qwiic cable: UNO Q -> Modulino Light
 //   Each LED: pin -> resistor -> LED long leg (+); LED short leg (-) -> GND
 //   | Pin | LED          | Resistor        | Light show (while the laptop plays) | Status (laptop quiet 3 s) |
 //   |-----|--------------|-----------------|-------------------------------------|---------------------------|
@@ -54,12 +53,8 @@ int gainIdx = 1;          // start at 3x; auto-adjusted below
 bool haveLight = false;
 unsigned long lightReads = 0, readsAtDiag = 0;
 
-ModulinoMovement movement;
-ModulinoKnob knob;
 Arduino_LED_Matrix matrix;
 
-bool haveMovement = false, haveKnob = false;
-float ax = 0, ay = 0, az = 1;
 volatile int shownBpm = 0, mood = 1, linkLaptop = 0, linkNicla = 0;
 volatile unsigned long flashUntil = 0, lastStatus = 0;
 
@@ -287,15 +282,10 @@ void setup() {
   matrix.begin();
   Modulino.begin(Wire1);  // Qwiic connector on the UNO Q is Wire1
   haveLight = startLight();
-  haveMovement = movement.begin();
-  haveKnob = knob.begin();
 }
 
 void loop() {
-  static unsigned long lastSend = 0, lastDraw = 0, lastDiag = 0;
-  if (haveMovement && movement.update()) {
-    ax = movement.getX(); ay = movement.getY(); az = movement.getZ();  // g
-  }
+  static unsigned long lastDraw = 0, lastDiag = 0;
   long ir, r, g, b;
   if (haveLight && readLight(ir, r, g, b)) {
     lightReads++;
@@ -303,15 +293,8 @@ void loop() {
     if (g > peak) peak = g;
     if (b > peak) peak = b;
     autoGain(peak);
-    // -> python on_ppg(t_ms, ir, r, g, b, ax, ay, az)
-    Bridge.notify("ppg", (long)millis(), ir, r, g, b, ax, ay, az);
-  }
-  if (millis() - lastSend >= 50) {
-    lastSend = millis();
-    int k = haveKnob ? knob.get() : 0;
-    int pressed = haveKnob ? knob.isPressed() : 0;
-    // -> python on_env(t_ms, ax, ay, az, knob, pressed)
-    Bridge.notify("env", (long)millis(), ax, ay, az, k, pressed);
+    // -> python on_ppg(t_ms, ir, r, g, b)
+    Bridge.notify("ppg", (long)millis(), ir, r, g, b);
   }
   if (millis() - lastDiag >= 2000) {
     unsigned long dt = millis() - lastDiag;

@@ -129,23 +129,24 @@ test("presence: band goes quiet when the webcam sees no face for 10 s", () => {
   assert.equal(b.update(12200).presence, 1);
 });
 
-test("melody: UNO Q Movement/Knob win; without it, intensity follows motion", () => {
-  const b = new Brain();
-  let now = 0;
+test("melody: camera motion drives density without extra sensors", () => {
+  const b = new Brain(); let now = 0;
   for (let i = 0; i < 10; i++) { b.onCamMotion(0.9, now); b.update((now += 100)); }
-  assert.ok(b.update(now).intensity > 0.7);
-  b.onUnoq({ intensity: 0.2, instrument: "choir", tilt: [1, 0], breakdown: true }, now);
-  const s = b.update((now += 100));
-  assert.equal(s.intensity, 0.2); assert.equal(s.instrument, "choir"); assert.equal(s.breakdown, true);
+  const s = b.update(now);
+  assert.ok(s.intensity > 0.7);
+  assert.equal(s.pattern, 3);
+  assert.equal(Object.hasOwn(s, "instrument"), false);
+  assert.equal(Object.hasOwn(s, "breakdown"), false);
 });
 
 // ---- Spotify mode (live/spotify.js) ----
 test("fusion reports the measured pulse and movement for Spotify mode", () => {
   const b = new Brain();
   assert.equal(b.update(0).heart, null);
-  b.onUnoq({ heart_live: true, heart_bpm: 118, intensity: 0.4 }, 0);
+  b.onUnoq({ heart_live: true, heart_bpm: 118 }, 0);
+  b.onCamMotion(0.4, 0);
   let s = b.update(100);
-  assert.equal(s.heart.bpm, 118); assert.equal(s.heart.from, "finger pulse (UNO Q)"); assert.ok(s.movement >= 0.4);
+  assert.equal(s.heart.bpm, 118); assert.equal(s.heart.from, "finger pulse (UNO Q)"); assert.ok(s.movement > 0);
   b.onCamPulse({ bpm: 90, trusted: true, quality: 0.6 }, 5000);
   s = b.update(5100);   // UNO Q went stale: the webcam pulse takes over
   assert.equal(s.heart.bpm, 90); assert.equal(s.heart.from, "webcam pulse");

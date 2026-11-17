@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
-  <title>Body Beat wiring</title>
-  <desc>Arduino UNO Q with five show LEDs on D2-D6 (220 ohm each) and a red pulse LED on D7 (3 x 37 ohm), Modulino Light, Movement and Knob on the Qwiic chain, a Nicla Vision on USB to the laptop, and the UNO Q talking to the laptop over WiFi.</desc>
+  <title>bodybeat — wiring for the actual build</title>
+  <desc>Arduino UNO Q with five show LEDs on D2-D6 (220 ohm each) and a red pulse LED on D7 (3 x 37 ohm), Modulino Light on the Qwiic connection, a Nicla Vision on USB to the laptop, and the UNO Q talking to the laptop over WiFi.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#5b6470"/>
@@ -16,29 +16,22 @@
   <rect width="1000" height="660" fill="#ffffff"/>
 
   <!-- title -->
-  <text x="40" y="44" font-size="26" font-weight="700" fill="#16191d">Body Beat: wiring</text>
-  <text x="40" y="68" font-size="14" fill="#5b6470">Arduino UNO Q + Modulino Light, Movement, Knob · Nicla Vision · laptop</text>
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#16191d">bodybeat: wiring</text>
+  <text x="40" y="68" font-size="14" fill="#5b6470">UNO Q + Modulino Light · Nicla Vision · laptop</text>
 
   <!-- ===== Qwiic chain ===== -->
   <g font-size="13">
     <path d="M180 140 V112 H320" fill="none" stroke="#2f6fd6" stroke-width="3"/>
-    <path d="M470 112 H490" stroke="#2f6fd6" stroke-width="3"/>
-    <path d="M640 112 H660" stroke="#2f6fd6" stroke-width="3"/>
     <text x="186" y="104" fill="#2f6fd6" font-weight="600">Qwiic (I²C, Wire1)</text>
 
     <rect x="320" y="88" width="150" height="62" rx="8" fill="#eef3fb" stroke="#2f6fd6" stroke-width="2"/>
     <text x="395" y="112" text-anchor="middle" font-weight="700" fill="#16191d">Modulino Light</text>
     <text x="395" y="130" text-anchor="middle" fill="#5b6470">fingertip pulse</text>
     <text x="395" y="144" text-anchor="middle" fill="#5b6470" font-size="11">LTR381, 16-bit, 40 Hz</text>
+    <rect x="515" y="88" width="335" height="64" rx="9" fill="#eef9f5" stroke="#008184" stroke-width="1.5"/>
+    <text x="533" y="110" font-weight="700" fill="#005c5e">One Qwiic module: Light only</text>
+    <text x="533" y="130" fill="#3d444d">Pulse → tempo; Nicla motion → drums</text>
 
-    <rect x="490" y="88" width="150" height="62" rx="8" fill="#eef3fb" stroke="#2f6fd6" stroke-width="2"/>
-    <text x="565" y="112" text-anchor="middle" font-weight="700" fill="#16191d">Modulino Movement</text>
-    <text x="565" y="130" text-anchor="middle" fill="#5b6470">melody energy, tilt</text>
-
-    <rect x="660" y="88" width="150" height="62" rx="8" fill="#eef3fb" stroke="#2f6fd6" stroke-width="2"/>
-    <text x="735" y="112" text-anchor="middle" font-weight="700" fill="#16191d">Modulino Knob</text>
-    <text x="735" y="130" text-anchor="middle" fill="#5b6470">turn: instrument</text>
-    <text x="735" y="144" text-anchor="middle" fill="#5b6470">press: breakdown</text>
   </g>
 
   <!-- ===== UNO Q board ===== -->
@@ -173,6 +166,6 @@
     <path d="M0 0 H34" stroke="#2a2f36" stroke-width="2"/><text x="42" y="4">wire</text>
     <path d="M100 0 H134" stroke="#2f6fd6" stroke-width="3"/><text x="142" y="4">Qwiic cable</text>
     <path d="M240 0 H274" stroke="#7a52c7" stroke-width="2.5" stroke-dasharray="8 6"/><text x="282" y="4">wireless</text>
-    <text x="370" y="-14">~ = PWM pin (can fade). LED roles: status / during the light show.</text><text x="370" y="4">Each LED: pin → resistor → long leg (+); short leg (−) → GND.  D7 ≈ 12 mA, D2–D6 ≈ 6 mA at 3.3 V.</text>
+    <text x="370" y="-14">~ = PWM pin (can fade). LED roles: status / during the light show.</text><text x="370" y="4">Each LED: pin → resistor → long leg (+); short leg (−) → GND. Verify supply voltage and LED polarity.</text>
   </g>
 </svg>

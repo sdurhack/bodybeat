@@ -2,7 +2,7 @@
 //
 // A 16-step sequencer. Every part reads the latest musical state, so when an
 // actor goes offline its part simply keeps using the last values it sent.
-//   UNO Q  -> tempo (band clock, follows the heart), mood/key, intensity, tilt, instrument
+//   UNO Q  -> tempo (band clock, follows the heart), pulse state and LED synchronisation
 //   Nicla  -> drum pattern (0..3) and fills
 //   heart  -> a soft "lub-dub" thump on every real heartbeat, off the grid on purpose
 //   presence (UNO Q decision from the Nicla person classifier) -> person enters: the
@@ -38,7 +38,7 @@ const human = (v) => v * (0.9 + Math.random() * 0.2);
 
 export class Engine {
   constructor(getState, onNote) {
-    this.getState = getState;   // () => {bpm, mood, intensity, tilt, instrument, pattern, breakdown}
+    this.getState = getState;   // () => {bpm, mood, intensity, pattern, presence}
     this.onNote = onNote || (() => {});
     this.step = 0;              // 16ths since start
     this.quarterTimes = [];     // recent [time, stepIndex] of scheduled quarter notes, for re-sync
@@ -194,8 +194,8 @@ export class Engine {
       this.bar.mood = MOODS[s.mood] ? s.mood : this.bar.mood;
       this.bar.chord = Math.floor(step / 16) % 4;
       this.bar.fill = this.fillPending; this.fillPending = false;
-      // breakdown and quiet backing close the master filter: the band sounds "next door"
-      const cut = s.breakdown ? 1400 : lv < 0.5 ? 2600 : 18000;
+      // Quiet backing uses a softer filter when no face is present
+      const cut = lv < 0.5 ? 2600 : 18000;
       this.tone.frequency.setTargetAtTime(cut, t, cut > 5000 ? 0.6 : 1.2);
       this.dl.delayTime.setTargetAtTime(sd * 3, t, 0.05);       // dotted 8th
       this.dr.delayTime.setTargetAtTime(sd * 3, t, 0.05);
@@ -204,45 +204,42 @@ export class Engine {
     const chord = mood.chords[this.bar.chord].map((c) => mood.root + c);
 
     // pad + bass
-    if (i16 === 0) this.voicing = this.pad(chord, t, sd * 16, s.breakdown ? 0.05 : 0.032, inten);
-    if (!s.breakdown) {
-      const r = chord[0] - 24;
-      if (i16 === 0) this.bass(r, t, sd * 3.5, inten);
-      else if (lv > 0.3 && i16 === 8) this.bass(r, t, sd * 3, inten);
-      else if (inten > 0.5 && (i16 === 6 || i16 === 14)) this.bass(i16 === 14 && inten > 0.7 ? r + 12 : r + 7, ts, sd * 1.5, inten);
-      else if (inten > 0.8 && i16 === 11) this.bass(r, ts, sd, inten);
-    }
+    if (i16 === 0) this.voicing = this.pad(chord, t, sd * 16, 0.032, inten);
+    const r = chord[0] - 24;
+    if (i16 === 0) this.bass(r, t, sd * 3.5, inten);
+    else if (lv > 0.3 && i16 === 8) this.bass(r, t, sd * 3, inten);
+    else if (inten > 0.5 && (i16 === 6 || i16 === 14)) this.bass(i16 === 14 && inten > 0.7 ? r + 12 : r + 7, ts, sd * 1.5, inten);
+    else if (inten > 0.8 && i16 === 11) this.bass(r, ts, sd, inten);
+
 
     // drums (Nicla's part)
     // nobody there: quiet backing = heartbeat-only kick, whatever the camera motion says
     const pat = DRUMS[lv < 0.5 ? 0 : clamp(s.pattern ?? 1, 0, 3)];
     const vel = (0.55 + 0.45 * inten) * (0.5 + 0.5 * lv);
-    this.onStep?.({ step, i16, t, dur: sd, pattern: s.breakdown ? 4 : lv < 0.5 ? 0 : clamp(s.pattern ?? 1, 0, 3),
+    this.onStep?.({ step, i16, t, dur: sd, pattern: lv < 0.5 ? 0 : clamp(s.pattern ?? 1, 0, 3),
       fill: !!this.bar.fill, energy: inten, mood: this.bar.mood });
-    if (!s.breakdown) {
-      if (this.bar.fill && i16 >= 12) { this.snare(ts, vel * (0.5 + (i16 - 12) * 0.15), (i16 - 13.5) * 0.25); if (i16 === 15) this.snare(ts + sd / 2, vel, 0.4); }
-      else {
-        if (pat.k.includes(i16)) this.kick(t, human(vel));
-        if (pat.s.includes(i16)) this.snare(t, human(vel));
-        if (pat.o.includes(i16)) this.hat(ts, human(vel) * 0.8, true);
-        else if (pat.h.includes(i16)) this.hat(ts, human(vel) * (i16 % 4 === 2 ? 1 : 0.55));
-      }
-      if (this.bar.fill && i16 === 0) this.crash(t);
+    if (this.bar.fill && i16 >= 12) { this.snare(ts, vel * (0.5 + (i16 - 12) * 0.15), (i16 - 13.5) * 0.25); if (i16 === 15) this.snare(ts + sd / 2, vel, 0.4); }
+    else {
+      if (pat.k.includes(i16)) this.kick(t, human(vel));
+      if (pat.s.includes(i16)) this.snare(t, human(vel));
+      if (pat.o.includes(i16)) this.hat(ts, human(vel) * 0.8, true);
+      else if (pat.h.includes(i16)) this.hat(ts, human(vel) * (i16 % 4 === 2 ? 1 : 0.55));
     }
+    if (this.bar.fill && i16 === 0) this.crash(t);
+
 
     // arpeggio on the pad's chord tones: only when the band is busy, quiet, into the echo
-    if (!s.breakdown && lv > 0.5 && inten > 0.45 && (s.pattern ?? 1) >= 2 && i16 % 2 === 0 && this.voicing) {
+    if (lv > 0.5 && inten > 0.45 && (s.pattern ?? 1) >= 2 && i16 % 2 === 0 && this.voicing) {
       const v = this.voicing, k = (i16 / 2) % (v.length * 2 - 2 || 1);
       const idx = k < v.length ? k : v.length * 2 - 2 - k;     // up and back down
       this.arp(v[idx] + 12, ts, 0.5 + 0.5 * inten, idx % 2 ? 0.35 : -0.35);
     }
 
-    // melody (UNO Q's part): movement = how many notes, tilt = which way it climbs
+    // melody: camera movement drives note density and pitches take a musical random walk
     let p = lv * (i16 % 2 === 0 ? 0.12 + 0.6 * inten : inten > 0.6 ? (inten - 0.6) * 1.2 : 0);
     if (step % 32 >= 28) p *= 0.25;           // breathe at the end of every two bars
     if (Math.random() < p) {
-      const [tx, ty] = s.tilt || [0, 0];
-      const move = Math.round((Math.random() * 2 - 1) * 2 + tx * 1.5);
+      const move = Math.round((Math.random() * 2 - 1) * 2);
       this.melodyIdx = clamp(this.melodyIdx + move, 0, 16);
       let deg = this.melodyIdx;
       const semi = (d) => mood.scale[((d % 7) + 7) % 7] + 12 * Math.floor(d / 7);
@@ -255,13 +252,12 @@ export class Engine {
           if (tones.some((c) => pc(c) === pc(semi(try2)))) { deg = try2; break; }
         }
       }
-      const oct = ty > 0.4 ? 12 : ty < -0.4 ? -12 : 0;
-      let note = mood.root + semi(deg) + oct;
-      if (note === this.lastNote && i16 % 4 !== 0 && Math.random() < 0.6) note = mood.root + semi(deg + (Math.random() < 0.5 ? 1 : -1)) + oct;
+      let note = mood.root + semi(deg);
+      if (note === this.lastNote && i16 % 4 !== 0 && Math.random() < 0.6) note = mood.root + semi(deg + (Math.random() < 0.5 ? 1 : -1));
       this.lastNote = note;
       const accent = i16 % 4 === 0 ? 1 : 0.8;
-      this.lead(s.instrument, note, ts, human((0.4 + 0.5 * inten) * accent));
-      this.onNote(note, ts, s.instrument);
+      this.lead("glass", note, ts, human((0.4 + 0.5 * inten) * accent));
+      this.onNote(note, ts, "glass");
     }
   }
 
