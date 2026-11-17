@@ -7,3 +7,11 @@ unoq/python/peers.txt
 # notebook outputs when run locally
 model/export/
 model/*.zip
+
+# local secrets and credentials (never commit them)
+.env
+.env.*
+!.env.example
+*.secrets.json
+.spotify/
+spotify_tokens.json
