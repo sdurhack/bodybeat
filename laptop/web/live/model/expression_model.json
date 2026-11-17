@@ -1,0 +1,436 @@
+{
+ "format": "bodyband-expr-1",
+ "input": [
+  48,
+  48,
+  1
+ ],
+ "scale": "pixel/255, grey = 0.299R+0.587G+0.114B",
+ "labels": [
+  "neutral",
+  "happy",
+  "sad",
+  "angry",
+  "fearful",
+  "disgusted",
+  "surprised"
+ ],
+ "flip_tta": true,
+ "ops": [
+  {
+   "op": "conv",
+   "name": "c1",
+   "w": {
+    "shape": [
+     3,
+     3,
+     1,
+     24
+    ],
+    "offset": 0,
+    "dtype": "uint8",
+    "min": -10.897875785827637,
+    "scale": 0.0826743668200923
+   },
+   "b": {
+    "shape": [
+     24
+    ],
+    "offset": 216,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "conv",
+   "name": "c2",
+   "w": {
+    "shape": [
+     3,
+     3,
+     24,
+     32
+    ],
+    "offset": 312,
+    "dtype": "uint8",
+    "min": -0.4532597064971924,
+    "scale": 0.003692490096185722
+   },
+   "b": {
+    "shape": [
+     32
+    ],
+    "offset": 7224,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "maxpool",
+   "name": "p1"
+  },
+  {
+   "op": "dwconv",
+   "name": "b1a_dw",
+   "w": {
+    "shape": [
+     3,
+     3,
+     32,
+     1
+    ],
+    "offset": 7352,
+    "dtype": "uint8",
+    "min": -0.9748468995094299,
+    "scale": 0.009790116899153765
+   },
+   "b": {
+    "shape": [
+     32
+    ],
+    "offset": 7640,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "conv",
+   "name": "b1a_pw",
+   "w": {
+    "shape": [
+     1,
+     1,
+     32,
+     64
+    ],
+    "offset": 7768,
+    "dtype": "uint8",
+    "min": -0.8508174419403076,
+    "scale": 0.006062997088712804
+   },
+   "b": {
+    "shape": [
+     64
+    ],
+    "offset": 9816,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "dwconv",
+   "name": "b1b_dw",
+   "w": {
+    "shape": [
+     3,
+     3,
+     64,
+     1
+    ],
+    "offset": 10072,
+    "dtype": "uint8",
+    "min": -1.392286777496338,
+    "scale": 0.010560998262143602
+   },
+   "b": {
+    "shape": [
+     64
+    ],
+    "offset": 10648,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "conv",
+   "name": "b1b_pw",
+   "w": {
+    "shape": [
+     1,
+     1,
+     64,
+     64
+    ],
+    "offset": 10904,
+    "dtype": "uint8",
+    "min": -0.4698590040206909,
+    "scale": 0.003801093615737616
+   },
+   "b": {
+    "shape": [
+     64
+    ],
+    "offset": 15000,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "maxpool",
+   "name": "p2"
+  },
+  {
+   "op": "dwconv",
+   "name": "b2a_dw",
+   "w": {
+    "shape": [
+     3,
+     3,
+     64,
+     1
+    ],
+    "offset": 15256,
+    "dtype": "uint8",
+    "min": -1.2270978689193726,
+    "scale": 0.010347901606092266
+   },
+   "b": {
+    "shape": [
+     64
+    ],
+    "offset": 15832,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "conv",
+   "name": "b2a_pw",
+   "w": {
+    "shape": [
+     1,
+     1,
+     64,
+     128
+    ],
+    "offset": 16088,
+    "dtype": "uint8",
+    "min": -0.5646932721138,
+    "scale": 0.004993992459540274
+   },
+   "b": {
+    "shape": [
+     128
+    ],
+    "offset": 24280,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "dwconv",
+   "name": "b2b_dw",
+   "w": {
+    "shape": [
+     3,
+     3,
+     128,
+     1
+    ],
+    "offset": 24792,
+    "dtype": "uint8",
+    "min": -1.8540855646133423,
+    "scale": 0.016263731320699058
+   },
+   "b": {
+    "shape": [
+     128
+    ],
+    "offset": 25944,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "conv",
+   "name": "b2b_pw",
+   "w": {
+    "shape": [
+     1,
+     1,
+     128,
+     128
+    ],
+    "offset": 26456,
+    "dtype": "uint8",
+    "min": -0.48121342062950134,
+    "scale": 0.0036676902397006165
+   },
+   "b": {
+    "shape": [
+     128
+    ],
+    "offset": 42840,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "maxpool",
+   "name": "p3"
+  },
+  {
+   "op": "dwconv",
+   "name": "b3a_dw",
+   "w": {
+    "shape": [
+     3,
+     3,
+     128,
+     1
+    ],
+    "offset": 43352,
+    "dtype": "uint8",
+    "min": -2.8660225868225098,
+    "scale": 0.026149938620773017
+   },
+   "b": {
+    "shape": [
+     128
+    ],
+    "offset": 44504,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "conv",
+   "name": "b3a_pw",
+   "w": {
+    "shape": [
+     1,
+     1,
+     128,
+     192
+    ],
+    "offset": 45016,
+    "dtype": "uint8",
+    "min": -0.40532201528549194,
+    "scale": 0.0033997790486204856
+   },
+   "b": {
+    "shape": [
+     192
+    ],
+    "offset": 69592,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "dwconv",
+   "name": "b3b_dw",
+   "w": {
+    "shape": [
+     3,
+     3,
+     192,
+     1
+    ],
+    "offset": 70360,
+    "dtype": "uint8",
+    "min": -2.227213144302368,
+    "scale": 0.021427277957691865
+   },
+   "b": {
+    "shape": [
+     192
+    ],
+    "offset": 72088,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "conv",
+   "name": "b3b_pw",
+   "w": {
+    "shape": [
+     1,
+     1,
+     192,
+     192
+    ],
+    "offset": 72856,
+    "dtype": "uint8",
+    "min": -0.35095900297164917,
+    "scale": 0.0029452495715197396
+   },
+   "b": {
+    "shape": [
+     192
+    ],
+    "offset": 109720,
+    "dtype": "float32"
+   }
+  },
+  {
+   "op": "gap",
+   "name": "gap"
+  },
+  {
+   "op": "dense",
+   "name": "head",
+   "w": {
+    "shape": [
+     192,
+     7
+    ],
+    "offset": 110488,
+    "dtype": "uint8",
+    "min": -0.4915401339530945,
+    "scale": 0.0029485804193160113
+   },
+   "b": {
+    "shape": [
+     7
+    ],
+    "offset": 111832,
+    "dtype": "float32"
+   }
+  }
+ ],
+ "trained_on": "FER2013 images + FER+ labels (Microsoft, MIT)",
+ "test_results": {
+  "ours (one pass)": {
+   "acc7": 0.7881885292447472,
+   "acc3": 0.8273708120386144,
+   "per_class": {
+    "neutral": 0.88,
+    "happy": 0.87,
+    "sad": 0.51,
+    "angry": 0.81,
+    "fearful": 0.36,
+    "disgusted": 0.09,
+    "surprised": 0.81
+   }
+  },
+  "ours (+ mirrored)": {
+   "acc7": 0.7984099943214082,
+   "acc3": 0.8327654741624078,
+   "per_class": {
+    "neutral": 0.9,
+    "happy": 0.86,
+    "sad": 0.53,
+    "angry": 0.81,
+    "fearful": 0.33,
+    "disgusted": 0.09,
+    "surprised": 0.83
+   }
+  },
+  "face-api": {
+   "acc7": 0.6467915956842702,
+   "acc3": 0.7328222600795002,
+   "per_class": {
+    "neutral": 0.55,
+    "happy": 0.82,
+    "sad": 0.55,
+    "angry": 0.6,
+    "fearful": 0.45,
+    "disgusted": 0.47,
+    "surprised": 0.77
+   }
+  },
+  "agreement_3_groups": 0.7705848949460534,
+  "ours (exported, 8-bit)": {
+   "acc7": 0.7978421351504826,
+   "acc3": 0.8333333333333334,
+   "per_class": {
+    "neutral": 0.9,
+    "happy": 0.86,
+    "sad": 0.53,
+    "angry": 0.81,
+    "fearful": 0.34,
+    "disgusted": 0.09,
+    "surprised": 0.83
+   }
+  }
+ }
+}

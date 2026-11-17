@@ -1,0 +1,11 @@
+# App Lab sketch profile. If App Lab complains, delete this file and add
+# Arduino_Modulino via App Lab's library manager instead (the other libs ship with the core).
+profiles:
+  default:
+    fqbn: arduino:zephyr:unoq
+    platforms:
+      - platform: arduino:zephyr
+    libraries:
+      - Arduino_Modulino
+      - Arduino_RouterBridge
+default_profile: default

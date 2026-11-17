@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+# per-setup addresses for the UNO Q (see README)
+unoq/python/peers.txt
+# notebook outputs when run locally
+model/export/
+model/*.zip

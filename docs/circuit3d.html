@@ -1,0 +1,468 @@
+<title>Body Beat Circuit 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a workbench scene up top (the hardware, lit by its own light show), the parts list as a bench card below. */
+:root {
+  --bg: #f3f5f2; --fg: #15191c; --muted: #5a646b; --line: #d7dcd8; --card: #ffffff;
+  --accent: #008184;            /* Arduino teal, the UNO Q board itself */
+  --scene: #e7ebe6; --bench: #d9ded7;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111517; --fg: #e8ecea; --muted: #97a3a8; --line: #273035; --card: #171d20;
+  --accent: #39c2c4; --scene: #161c1f; --bench: #20282b; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111517; --fg: #e8ecea; --muted: #97a3a8; --line: #273035; --card: #171d20;
+  --accent: #39c2c4; --scene: #161c1f; --bench: #20282b; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.6rem, 3.4vw, 2.3rem); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--card); }
+.seg button, .btn { font: 500 13px var(--font-body); color: var(--fg); background: transparent; border: 0; padding: 7px 13px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+.btn { border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
+.btn[aria-pressed="false"] { color: var(--muted); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.stage { position: relative; height: min(72vh, 680px); min-height: 380px; border-radius: 14px; overflow: hidden;
+  background: var(--scene); border: 1px solid var(--line); touch-action: none; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.lbl { position: absolute; transform: translate(-50%, -100%); white-space: nowrap; font: 600 12px var(--font-body);
+  color: var(--fg); background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid var(--line);
+  padding: 3px 8px; border-radius: 6px; margin-top: -8px; }
+.lbl small { font: 500 11px var(--font-mono); color: var(--muted); margin-left: 4px; }
+.labels.off .lbl { display: none; }
+.hint { position: absolute; left: 12px; bottom: 10px; font: 500 12px var(--font-body); color: var(--muted); pointer-events: none; }
+.err { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+.parts { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: grid; gap: 10px; }
+.parts h2 { font-family: var(--font-display); font-size: 1.15rem; margin: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl { overflow-x: auto; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-top: 1px solid var(--line); vertical-align: top; }
+th { font: 600 11px var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-top: 0; }
+td.pin { font-family: var(--font-mono); white-space: nowrap; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+@media (max-width: 560px) { .hint { display: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Body Beat circuit</h1>
+      <p class="sub">Arduino UNO Q with three Modulinos, six LEDs on a breadboard and a Nicla Vision, wired to the laptop that plays the band. Drag to turn, scroll or pinch to zoom.</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="LED mode">
+        <button id="m-show" aria-pressed="true">Light show</button>
+        <button id="m-status" aria-pressed="false">Status lights</button>
+        <button id="m-off" aria-pressed="false">Paused</button>
+      </div>
+      <button class="btn" id="b-labels" aria-pressed="true">Labels</button>
+      <button class="btn" id="b-finger" aria-pressed="true">Fingertip</button>
+      <button class="btn" id="b-reset">Reset view</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="labels" id="labels"></div>
+    <div class="hint">72 BPM · busy drum pattern · A minor</div>
+  </div>
+
+  <section class="parts">
+    <h2>Parts and wiring</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Part</th><th>Connects to</th><th>Job in the band</th></tr></thead>
+      <tbody>
+        <tr><td>Arduino UNO Q</td><td class="pin">USB-C power, WiFi</td><td>Keeps the band clock, reads the pulse, runs the LED matrix and light show</td></tr>
+        <tr><td><span class="dot" style="background:#3b7cf0"></span>Blue LED + 220 Ω</td><td class="pin">D2</td><td>Beat; snare in the light show</td></tr>
+        <tr><td><span class="dot" style="background:#3b7cf0"></span>Blue LED + 220 Ω</td><td class="pin">D3 (PWM)</td><td>Minor key; snare and kick ripple</td></tr>
+        <tr><td><span class="dot" style="background:#f2c230"></span>Yellow LED + 220 Ω</td><td class="pin">D4</td><td>Major key; kick</td></tr>
+        <tr><td><span class="dot" style="background:#33b864"></span>Green LED + 220 Ω</td><td class="pin">D5 (PWM)</td><td>Laptop link; hi-hats</td></tr>
+        <tr><td><span class="dot" style="background:#33b864"></span>Green LED + 220 Ω</td><td class="pin">D6 (PWM)</td><td>Nicla data; hi-hats</td></tr>
+        <tr><td><span class="dot" style="background:#e5392f"></span>Red LED + 3 × 37 Ω</td><td class="pin">D7</td><td>Always on: shines through the fingertip for the pulse</td></tr>
+        <tr><td>Modulino Light</td><td class="pin">Qwiic 1</td><td>Fingertip pulse sets the tempo</td></tr>
+        <tr><td>Modulino Movement</td><td class="pin">Qwiic 2</td><td>Melody energy and direction</td></tr>
+        <tr><td>Modulino Knob</td><td class="pin">Qwiic 3</td><td>Turn: instrument. Press: breakdown</td></tr>
+        <tr><td>Nicla Vision</td><td class="pin">USB-C to laptop</td><td>Camera picture (face → key), motion → drums, clap → fill</td></tr>
+        <tr><td>Laptop</td><td class="pin">USB + WiFi (UDP 7100)</td><td>Reads the face, mixes everything, plays the only sound</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  const stage = document.getElementById("stage");
+  if (!window.THREE || !THREE.OrbitControls) {
+    stage.insertAdjacentHTML("beforeend", '<div class="err">The 3D view needs WebGL and the three.js library, which did not load here.</div>');
+    return;
+  }
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- renderer, camera, lights ----------
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+  catch (e) { stage.insertAdjacentHTML("beforeend", '<div class="err">This browser could not start WebGL, so the 3D view cannot draw.</div>'); return; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  stage.prepend(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+  const HOME = { pos: new THREE.Vector3(6, 17, 21), target: new THREE.Vector3(-1, 0, -1.5) };
+  camera.position.copy(HOME.pos);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.copy(HOME.target);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.minDistance = 6; controls.maxDistance = 55; controls.maxPolarAngle = Math.PI * 0.47;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f88, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.75);
+  sun.position.set(-8, 20, 12); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 16, bottom: -16, near: 1, far: 60 });
+  scene.add(sun);
+
+  const bench = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
+  bench.rotation.x = -Math.PI / 2; bench.receiveShadow = true; scene.add(bench);
+  function applyTheme() {
+    scene.background = new THREE.Color(css("--scene"));
+    scene.fog = new THREE.Fog(css("--scene"), 45, 90);
+    bench.material.color.set(css("--bench"));
+  }
+  applyTheme();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+  new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // ---------- helpers ----------
+  const std = (color, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.6, metalness: 0.05 }, o));
+  function box(w, h, d, mat, x, y, z) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; scene.add(m); return m;
+  }
+  function cyl(r, h, mat, x, y, z, seg = 20) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat);
+    m.position.set(x, y, z); m.castShadow = true; scene.add(m); return m;
+  }
+  function canvasTex(w, h, draw) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    draw(c.getContext("2d"), w, h);
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+  }
+  // a PCB: coloured box with a silkscreen texture on the top face
+  function pcb(w, d, color, title, sub, x, y, z, t = 0.16) {
+    const top = canvasTex(512, Math.round(512 * d / w), (g, W, H) => {
+      g.fillStyle = color; g.fillRect(0, 0, W, H);
+      g.strokeStyle = "rgba(255,255,255,0.10)"; g.lineWidth = 3;
+      for (let i = 0; i < 9; i++) { g.beginPath(); g.moveTo(20 + i * 52, H); g.lineTo(20 + i * 52, H * 0.62); g.lineTo(70 + i * 48, H * 0.45); g.stroke(); }
+      g.fillStyle = "rgba(255,255,255,0.92)"; g.font = "700 46px Inter, Arial"; g.fillText(title, 26, 64);
+      if (sub) { g.font = "500 30px Inter, Arial"; g.fillStyle = "rgba(255,255,255,0.7)"; g.fillText(sub, 26, 104); }
+    });
+    const side = std(color, { roughness: 0.7 });
+    return box(w, t, d, [side, side, std(0xffffff, { map: top, roughness: 0.55 }), side, side, side], x, y, z);
+  }
+  function tube(points, color, r = 0.06) {
+    const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)));
+    const m = new THREE.Mesh(new THREE.TubeGeometry(curve, 80, r, 8, false), std(color, { roughness: 0.45 }));
+    m.castShadow = true; scene.add(m); return curve;
+  }
+  const glowTex = canvasTex(128, 128, (g) => {
+    const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.25, "rgba(255,255,255,0.55)"); r.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = r; g.fillRect(0, 0, 128, 128);
+  });
+
+  // ---------- Arduino UNO Q ----------
+  const UNO = { x: -6.2, z: 0.4, w: 6.86, d: 5.34, y: 0.42 };
+  for (const [dx, dz] of [[-3, -2.3], [3, -2.3], [-3, 2.3], [3, 2.3]]) cyl(0.18, 0.34, std(0x9aa0a6, { metalness: 0.6 }), UNO.x + dx, 0.17, UNO.z + dz, 10);
+  pcb(UNO.w, UNO.d, "#008184", "ARDUINO UNO Q", "STM32U585 + Qualcomm QRB2210", UNO.x, UNO.y, UNO.z);
+  const topY = UNO.y + 0.08;
+  // digital header along the back edge: D0..D13, then GND
+  const HEADER_X0 = UNO.x - 2.6, PITCH = 0.254, HEADER_Z = UNO.z - UNO.d / 2 + 0.28;
+  box(16 * PITCH + 0.1, 0.85, 0.27, std(0x15181b, { roughness: 0.8 }), HEADER_X0 + 7.5 * PITCH, topY + 0.42, HEADER_Z);
+  const pinX = (i) => HEADER_X0 + i * PITCH;
+  const PIN_TOP = topY + 0.86;
+  // USB-C, Qwiic socket, a couple of chips
+  box(0.9, 0.34, 0.75, std(0xb9bfc4, { metalness: 0.8, roughness: 0.3 }), UNO.x - UNO.w / 2 + 0.35, topY + 0.17, UNO.z + 0.9);
+  box(0.6, 0.45, 0.42, std(0xf1f1ec), UNO.x + UNO.w / 2 - 0.5, topY + 0.22, UNO.z - UNO.d / 2 + 0.55);
+  box(1.3, 0.12, 1.3, std(0x1c1f22, { roughness: 0.4 }), UNO.x + 1.9, topY + 0.06, UNO.z + 1.2);
+  box(0.9, 0.1, 0.9, std(0x1c1f22, { roughness: 0.4 }), UNO.x + 2.0, topY + 0.05, UNO.z - 0.5);
+  // LED matrix 13 x 8, showing "72" and a beat row
+  const MATRIX = [];
+  const matOff = std(0x3a2a2a, { roughness: 0.5 }), dotGeo = new THREE.BoxGeometry(0.13, 0.05, 0.13);
+  const DIG = { 7: [7, 1, 1, 1, 1], 2: [7, 1, 7, 4, 7] };
+  const lit = new Set();
+  [[7, 1], [2, 5]].forEach(([d, x0]) => DIG[d].forEach((row, r) => [0, 1, 2].forEach((c) => { if (row & (4 >> c)) lit.add((x0 + c) + "," + r); })));
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 13; c++) {
+    const on = lit.has(c + "," + r);
+    const m = new THREE.Mesh(dotGeo, on ? std(0xff4d4d, { emissive: 0xff2a2a, emissiveIntensity: 1.6 }) : r === 7 ? std(0xff4d4d, { emissive: 0xff2a2a, emissiveIntensity: 0 }) : matOff);
+    m.position.set(UNO.x - 1.45 + c * 0.2, topY + 0.03, UNO.z + 0.1 + r * 0.2);
+    scene.add(m); if (r === 7) MATRIX.push(m);
+  }
+
+  // ---------- breadboard ----------
+  const BB = { x: 3.6, z: 0.6, w: 8.6, d: 5.6, h: 0.9 };
+  const bbTex = canvasTex(1024, Math.round(1024 * BB.d / BB.w), (g, W, H) => {
+    g.fillStyle = "#f4f3ee"; g.fillRect(0, 0, W, H);
+    const u = W / BB.w;
+    g.fillStyle = "#c33"; g.fillRect(0, 0.15 * u, W, 4); g.fillStyle = "#2a5bd7"; g.fillRect(0, 0.75 * u, W, 4);
+    g.fillStyle = "#e3e1d9"; g.fillRect(0, H / 2 - 0.12 * u, W, 0.24 * u);
+    g.fillStyle = "#3b3b38";
+    for (let x = 0.25; x < BB.w - 0.1; x += 0.254) {
+      for (const z of [0.3, 0.55]) g.fillRect(x * u - 3, z * u - 3, 6, 6);
+      for (let k = 0; k < 5; k++) { g.fillRect(x * u - 3, (1.2 + k * 0.254) * u - 3, 6, 6); g.fillRect(x * u - 3, (H / u / 2 + 0.3 + k * 0.254) * u - 3, 6, 6); }
+    }
+  });
+  const bbSide = std(0xeceae3, { roughness: 0.85 });
+  box(BB.w, BB.h, BB.d, [bbSide, bbSide, std(0xffffff, { map: bbTex, roughness: 0.85 }), bbSide, bbSide, bbSide], BB.x, BB.h / 2, BB.z);
+  const BBY = BB.h;
+  const RAIL_Z = BB.z - BB.d / 2 + 0.6;   // blue (GND) rail
+
+  // ---------- LEDs, resistors, wires ----------
+  const LEDS = [
+    { pin: 2, color: 0x3b7cf0, name: "D2", r: "220 Ω" },
+    { pin: 3, color: 0x3b7cf0, name: "D3", r: "220 Ω" },
+    { pin: 4, color: 0xf2c230, name: "D4", r: "220 Ω" },
+    { pin: 5, color: 0x33b864, name: "D5", r: "220 Ω" },
+    { pin: 6, color: 0x33b864, name: "D6", r: "220 Ω" },
+    { pin: 7, color: 0xe5392f, name: "D7", r: "3 × 37 Ω" },
+  ];
+  const WIRE_COLORS = [0x2f6fd6, 0x5b8de8, 0xd9a400, 0x2f9e57, 0x57c27e, 0xd23a2a];
+  const legMat = std(0xb8bcc0, { metalness: 0.8, roughness: 0.3 });
+  const bodyMat = std(0xd9c8a5, { roughness: 0.5 });
+  const BAND = { red: 0xc8202a, brown: 0x6b3b1f, gold: 0xc9a227, orange: 0xe67e22, violet: 0x7d3cbf, black: 0x111111 };
+  function resistor(x, z0, z1, bands) {
+    const len = Math.abs(z1 - z0), zc = (z0 + z1) / 2, y = BBY + 0.32;
+    const body = cyl(0.12, len * 0.62, bodyMat, x, y, zc, 14); body.rotation.x = Math.PI / 2;
+    bands.forEach((b, i) => { const s = cyl(0.127, 0.05, std(BAND[b]), x, y, zc - len * 0.22 + i * len * 0.13, 14); s.rotation.x = Math.PI / 2; });
+    for (const z of [z0, z1]) cyl(0.025, 0.36, legMat, x, BBY + 0.16, z, 6);
+    const lead = cyl(0.025, len, legMat, x, y, zc, 6); lead.rotation.x = Math.PI / 2;
+  }
+  LEDS.forEach((L, k) => {
+    const x = BB.x - BB.w / 2 + 1.0 + k * 1.25;
+    L.x = x;
+    const ledZ = BB.z - 0.55;
+    // LED: epoxy body + dome, glowing; a sprite halo; legs into the board
+    L.mat = std(L.color, { emissive: L.color, emissiveIntensity: 0.05, roughness: 0.25, transparent: true, opacity: 0.92 });
+    const body = cyl(0.26, 0.42, L.mat, x, BBY + 0.62, ledZ, 24);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), L.mat);
+    dome.position.set(x, BBY + 0.83, ledZ); scene.add(dome);
+    cyl(0.3, 0.06, L.mat, x, BBY + 0.42, ledZ, 24);
+    for (const dx of [-0.127, 0.127]) cyl(0.022, 0.42, legMat, x + dx, BBY + 0.2, ledZ, 6);
+    L.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: L.color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 }));
+    L.halo.position.set(x, BBY + 0.85, ledZ); L.halo.scale.set(2.2, 2.2, 1); scene.add(L.halo);
+    L.top = new THREE.Vector3(x, BBY + 1.15, ledZ);
+    // resistor(s) in front of the LED, in the same column
+    if (L.pin === 7) {
+      resistor(x, BB.z + 2.2, BB.z + 1.62, ["orange", "violet", "black", "gold"]);
+      resistor(x, BB.z + 1.62, BB.z + 1.04, ["orange", "violet", "black", "gold"]);
+      resistor(x, BB.z + 1.04, BB.z + 0.46, ["orange", "violet", "black", "gold"]);
+    } else resistor(x, BB.z + 2.2, BB.z + 0.46, ["red", "red", "brown", "gold"]);
+    // short jumper: resistor -> LED anode, and LED cathode -> GND rail
+    tube([[x + 0.127, BBY, BB.z + 0.46], [x + 0.2, BBY + 0.35, BB.z], [x + 0.127, BBY, ledZ + 0.2]], 0xc9cdd1, 0.03);
+    tube([[x - 0.127, BBY, ledZ - 0.2], [x - 0.25, BBY + 0.4, (ledZ + RAIL_Z) / 2], [x - 0.127, BBY, RAIL_Z]], 0x222428, 0.035);
+    // wire from the UNO Q header pin, over the board, into the resistor's front end
+    const px = pinX(L.pin);
+    tube([[px, PIN_TOP, HEADER_Z], [px, PIN_TOP + 1.4 + k * 0.15, HEADER_Z - 0.4], [(px + x) / 2, 3.2 + k * 0.18, BB.z + 3.4],
+          [x, BBY + 0.9, BB.z + 2.9], [x, BBY, BB.z + 2.2]], WIRE_COLORS[k], 0.055);
+  });
+  // GND: header pin -> blue rail
+  tube([[pinX(15), PIN_TOP, HEADER_Z], [pinX(15) + 0.6, PIN_TOP + 1.0, HEADER_Z - 0.6], [BB.x - BB.w / 2 + 0.3, 1.6, RAIL_Z - 0.6], [BB.x - BB.w / 2 + 0.3, BBY, RAIL_Z]], 0x1a1c1f, 0.06);
+
+  // ---------- Modulinos on the Qwiic chain ----------
+  const red = LEDS[5];
+  const MOD_LIGHT = { x: red.x + 2.6, z: BB.z - 0.55 };
+  box(2.6, 1.0, 2.2, std(0xe9e7e0, { roughness: 0.9 }), MOD_LIGHT.x, 0.5, MOD_LIGHT.z);                 // a little block so it sits level
+  pcb(2.0, 2.0, "#1f8a8c", "Light", "Modulino", MOD_LIGHT.x, 1.08, MOD_LIGHT.z);
+  box(0.36, 0.12, 0.36, std(0x2b2b2b, { roughness: 0.2 }), MOD_LIGHT.x - 0.5, 1.22, MOD_LIGHT.z);
+  const MOD_MOVE = { x: 1.5, z: -6.2 }, MOD_KNOB = { x: -3.6, z: -6.2 };
+  pcb(2.0, 2.0, "#1f8a8c", "Movement", "Modulino", MOD_MOVE.x, 0.1, MOD_MOVE.z);
+  box(0.5, 0.12, 0.5, std(0x1c1f22, { roughness: 0.4 }), MOD_MOVE.x + 0.4, 0.24, MOD_MOVE.z + 0.3);
+  pcb(2.0, 2.0, "#1f8a8c", "Knob", "Modulino", MOD_KNOB.x, 0.1, MOD_KNOB.z);
+  box(0.8, 0.4, 0.8, std(0x2b2e31), MOD_KNOB.x + 0.3, 0.38, MOD_KNOB.z + 0.25);
+  const knobCap = cyl(0.42, 0.7, std(0x3a3f44, { roughness: 0.35, metalness: 0.3 }), MOD_KNOB.x + 0.3, 0.92, MOD_KNOB.z + 0.25, 28);
+  const qwiic = [
+    tube([[UNO.x + UNO.w / 2 - 0.5, topY + 0.4, UNO.z - UNO.d / 2 + 0.55], [UNO.x + 3.3, 2.8, UNO.z - 4.5], [BB.x + 2, 3.6, BB.z - 4.2], [MOD_LIGHT.x + 0.9, 2.2, MOD_LIGHT.z - 1.6], [MOD_LIGHT.x + 0.8, 1.2, MOD_LIGHT.z - 0.8]], 0x111111, 0.07),
+    tube([[MOD_LIGHT.x - 0.8, 1.2, MOD_LIGHT.z - 0.9], [MOD_LIGHT.x - 1.2, 1.4, MOD_LIGHT.z - 3.5], [MOD_MOVE.x + 1.6, 0.6, MOD_MOVE.z + 0.4], [MOD_MOVE.x + 0.95, 0.2, MOD_MOVE.z]], 0x111111, 0.07),
+    tube([[MOD_MOVE.x - 0.95, 0.2, MOD_MOVE.z], [(MOD_MOVE.x + MOD_KNOB.x) / 2, 0.9, MOD_MOVE.z - 0.6], [MOD_KNOB.x + 0.95, 0.2, MOD_KNOB.z]], 0x111111, 0.07),
+  ];
+
+  // the fingertip, lying over the red LED and the Light sensor
+  const finger = new THREE.Group(), skin = std(0xe9b49a, { roughness: 0.75, transparent: true, opacity: 0.55 });
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 2.6, 24), skin); shaft.rotation.z = Math.PI / 2; finger.add(shaft);
+  for (const dx of [-1.3, 1.3]) { const tip = new THREE.Mesh(new THREE.SphereGeometry(0.75, 24, 16), skin); tip.position.x = dx; finger.add(tip); }
+  finger.position.set((red.x + MOD_LIGHT.x) / 2 - 0.2, 1.95, MOD_LIGHT.z);
+  scene.add(finger);
+
+  // ---------- Nicla Vision on a stand, and the laptop ----------
+  const NIC = { x: -13.2, z: 3.4 };
+  box(1.2, 1.8, 1.2, std(0x30353a, { roughness: 0.8 }), NIC.x, 0.9, NIC.z);
+  const nicla = pcb(2.29, 2.29, "#1d2228", "Nicla", "Vision", NIC.x, 2.95, NIC.z, 0.18);
+  nicla.rotation.x = Math.PI / 2.4;
+  const lens = cyl(0.32, 0.3, std(0x0b0d10, { roughness: 0.15, metalness: 0.4 }), NIC.x, 3.15, NIC.z + 0.25, 24);
+  lens.rotation.x = Math.PI / 2.4 - Math.PI / 2;
+  const lensGlass = cyl(0.17, 0.32, std(0x2a59c9, { roughness: 0.05, metalness: 0.2, emissive: 0x10276b, emissiveIntensity: 0.6 }), NIC.x, 3.17, NIC.z + 0.27, 20);
+  lensGlass.rotation.x = lens.rotation.x;
+
+  const LAP = { x: -12.5, z: -5.5 };
+  const lapGroup = new THREE.Group(); lapGroup.position.set(LAP.x, 0, LAP.z); lapGroup.rotation.y = 0.55; scene.add(lapGroup);
+  const lapMat = std(0xb7bdc2, { metalness: 0.5, roughness: 0.4 });
+  const base = new THREE.Mesh(new THREE.BoxGeometry(9, 0.35, 6), lapMat); base.position.set(0, 0.18, 0); base.castShadow = true; lapGroup.add(base);
+  const kb = new THREE.Mesh(new THREE.BoxGeometry(7.6, 0.04, 2.6), std(0x2b2f33)); kb.position.set(0, 0.37, -0.3); lapGroup.add(kb);
+  const screenTex = canvasTex(900, 580, (g, W, H) => {
+    g.fillStyle = "#0f1416"; g.fillRect(0, 0, W, H);
+    g.fillStyle = "#39c2c4"; g.font = "700 46px Space Grotesk, Arial"; g.fillText("Body Beat", 40, 72);
+    g.fillStyle = "#97a3a8"; g.font = "500 26px Inter, Arial"; g.fillText("live.html · the band's only sound", 40, 112);
+    const tile = (x, y, k, v) => { g.fillStyle = "#1a2124"; g.fillRect(x, y, 250, 120); g.fillStyle = "#97a3a8"; g.font = "500 22px Inter, Arial"; g.fillText(k, x + 18, y + 38); g.fillStyle = "#e8ecea"; g.font = "700 40px Space Grotesk, Arial"; g.fillText(v, x + 18, y + 92); };
+    tile(40, 150, "Heart", "72 BPM"); tile(320, 150, "Key", "A minor"); tile(600, 150, "Face", "sad · ours");
+    g.strokeStyle = "#39c2c4"; g.lineWidth = 4; g.beginPath();
+    for (let x = 0; x <= 820; x += 4) { const t = x / 820 * 6 * Math.PI; g.lineTo(40 + x, 420 - Math.sin(t) * 40 * Math.exp(-(((t % (2 * Math.PI)) - 1) ** 2))); }
+    g.stroke();
+    ["#3b7cf0", "#3b7cf0", "#f2c230", "#33b864", "#33b864"].forEach((c, i) => { g.fillStyle = c; g.beginPath(); g.arc(80 + i * 70, 520, 18, 0, 7); g.fill(); });
+  });
+  const lid = new THREE.Group(); lid.position.set(0, 0.35, -3); lid.rotation.x = -0.32; lapGroup.add(lid);
+  const lidBox = new THREE.Mesh(new THREE.BoxGeometry(9, 6, 0.25), lapMat); lidBox.position.set(0, 3, 0); lidBox.castShadow = true; lid.add(lidBox);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(8.4, 5.4), new THREE.MeshBasicMaterial({ map: screenTex })); scr.position.set(0, 3, 0.13); lid.add(scr);
+
+  // USB-C cable: Nicla -> laptop
+  const lapPortWorld = new THREE.Vector3(4.5, 0.2, 1.4).applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.55).add(new THREE.Vector3(LAP.x, 0, LAP.z));
+  const usb = tube([[NIC.x, 2.2, NIC.z - 0.55], [NIC.x, 0.9, NIC.z - 1.4], [NIC.x + 0.8, 0.15, NIC.z - 4.0], [lapPortWorld.x, 0.2, lapPortWorld.z]], 0x2b2f33, 0.07);
+
+  // WiFi: a dashed arc UNO Q <-> laptop, with packets travelling both ways
+  const wifiCurve = new THREE.CatmullRomCurve3([new THREE.Vector3(UNO.x - 2.6, topY + 0.3, UNO.z - 1.6), new THREE.Vector3(UNO.x - 4.5, 6.5, UNO.z - 4.5), new THREE.Vector3(LAP.x + 2, 6.2, LAP.z + 0.5)]);
+  const wifiLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(wifiCurve.getPoints(80)), new THREE.LineDashedMaterial({ color: 0x7a52c7, dashSize: 0.35, gapSize: 0.25 }));
+  wifiLine.computeLineDistances(); scene.add(wifiLine);
+  const packets = [];
+  function packet(curve, color, speed, phase) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 8), new THREE.MeshBasicMaterial({ color }));
+    scene.add(m); packets.push({ m, curve, speed, t: phase });
+  }
+  packet(wifiCurve, 0x9b7be0, 0.32, 0); packet(wifiCurve, 0x9b7be0, -0.32, 0.5);
+  packet(usb, 0x39c2c4, 0.45, 0.2);
+
+  // ---------- labels ----------
+  const labelsEl = document.getElementById("labels");
+  const LABELS = [];
+  function label(text, pos, sub) {
+    const el = document.createElement("div"); el.className = "lbl";
+    el.textContent = text;
+    if (sub) { const s = document.createElement("small"); s.textContent = sub; el.appendChild(s); }
+    labelsEl.appendChild(el); LABELS.push({ el, pos: new THREE.Vector3(...pos) });
+  }
+  label("Arduino UNO Q", [UNO.x - 2.2, 0.5, UNO.z + 3.3], "band clock");
+  label("LED matrix", [UNO.x - 0.2, 0.9, UNO.z + 1.0], "tempo + beat");
+  label("D2–D6 show LEDs", [(LEDS[0].x + LEDS[4].x) / 2, 0.3, BB.z + 3.4], "220 Ω each");
+  label("Red pulse LED", [red.x - 0.3, 0.3, BB.z + 3.4], "D7 · 3 × 37 Ω");
+  label("Modulino Light", [MOD_LIGHT.x + 0.3, 3.2, MOD_LIGHT.z + 0.6], "fingertip pulse");
+  label("Modulino Movement", [MOD_MOVE.x, 1.0, MOD_MOVE.z], "energy, tilt");
+  label("Modulino Knob", [MOD_KNOB.x, 1.8, MOD_KNOB.z], "instrument");
+  label("Nicla Vision", [NIC.x, 4.4, NIC.z], "camera, mic");
+  label("Laptop", [LAP.x, 7.6, LAP.z - 1.2], "live.html");
+  label("WiFi", [wifiCurve.getPoint(0.5).x, wifiCurve.getPoint(0.5).y + 0.4, wifiCurve.getPoint(0.5).z], "UDP 7100");
+  label("USB-C", [usb.getPoint(0.6).x, 1.1, usb.getPoint(0.6).z], "picture + state");
+  label("Qwiic", [BB.x + 2, 4.0, BB.z - 4.2], "I²C chain");
+  const tmp = new THREE.Vector3();
+  function placeLabels(W, H) {
+    for (const L of LABELS) {
+      tmp.copy(L.pos).project(camera);
+      const hidden = tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1;
+      L.el.style.visibility = hidden ? "hidden" : "visible";
+      if (!hidden) L.el.style.left = ((tmp.x + 1) / 2 * W).toFixed(1) + "px", L.el.style.top = ((1 - tmp.y) / 2 * H).toFixed(1) + "px";
+    }
+  }
+
+  // ---------- the light show (same choreography as the UNO Q sketch, busy pattern) ----------
+  const BPM = 72, STEP = 60 / BPM / 4;
+  const KICK = 0x0101, SNARE = 0x1010, HAT = 0x5555, OPEN = 0x4000;
+  const env = [0, 0, 0, 0, 0], tau = [0.1, 0.1, 0.1, 0.1, 0.1];
+  let queue = [], mode = reduce ? "status" : "show", clock = 0, lastStep = -1, matrixFlash = 0;
+  const hit = (i, v, t, delay = 0) => queue.push({ at: clock + delay / 1000, i, v, t: t / 1000 });
+  function step(i) {
+    const on = (m) => (m >> i) & 1;
+    if (on(KICK)) { hit(2, 1, 170); hit(1, 0.6, 140, 35); hit(3, 0.6, 140, 35); hit(0, 0.3, 120, 70); hit(4, 0.3, 120, 70); }
+    if (on(SNARE)) { hit(0, 1, 150); hit(1, 0.85, 150); }
+    if (on(OPEN)) { hit(3, 0.85, 280); hit(4, 0.85, 280); }
+    else if (on(HAT)) hit((i >> 1) & 1 ? 4 : 3, i % 4 === 2 ? 0.7 : 0.4, 60);
+    if (i === 0) { hit(0, 0.7, 220, 90); hit(4, 0.7, 220, 90); }
+    if (i % 4 === 0) matrixFlash = 0.09;
+  }
+  function setModeBtns() {
+    for (const [id, m] of [["m-show", "show"], ["m-status", "status"], ["m-off", "off"]]) document.getElementById(id).setAttribute("aria-pressed", String(mode === m));
+  }
+  setModeBtns();
+
+  // ---------- loop ----------
+  let W = 1, H = 1;
+  function resize() {
+    W = stage.clientWidth; H = stage.clientHeight;
+    renderer.setSize(W, H, false); camera.aspect = W / H;
+    camera.fov = W < 600 ? 50 : 38; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(stage); resize();
+
+  const clockObj = new THREE.Clock();
+  function frame() {
+    const dt = Math.min(clockObj.getDelta(), 0.05);
+    if (mode !== "off") clock += dt;
+    // LED brightness 0..1 for D2..D6
+    const b = [0, 0, 0, 0, 0];
+    if (mode === "show") {
+      const s = Math.floor(clock / STEP);
+      if (s !== lastStep) { lastStep = s; step(((s % 16) + 16) % 16); }
+      for (let i = 0; i < 5; i++) env[i] *= Math.exp(-dt / tau[i]);
+      queue = queue.filter((h) => { if (h.at <= clock) { if (h.v >= env[h.i]) { env[h.i] = h.v; tau[h.i] = h.t; } return false; } return true; });
+      const beats = clock / (STEP * 4);
+      for (let i = 0; i < 5; i++) b[i] = Math.max(env[i], 0.1 * (0.5 + 0.5 * Math.sin(2 * Math.PI * beats - i * 1.1)) * ([1.5, 1.5, 0.8, 0.6, 0.6][i]));
+    } else if (mode === "status") {
+      const beatOn = (clock % (60 / BPM)) < 0.09;
+      b[0] = beatOn ? 1 : 0; b[1] = 1; b[2] = 0; b[3] = 1; b[4] = 1;   // beat, minor key, laptop + Nicla linked
+      if (beatOn && clock - (clock % (60 / BPM)) !== lastStep) matrixFlash = 0.09;
+    }
+    LEDS.forEach((L, i) => {
+      const v = i === 5 ? 1 : (L.pin === 2 || L.pin === 4) ? (b[i] > 0.33 ? 1 : 0.02) : Math.pow(b[i], 1.2);
+      L.mat.emissiveIntensity = 0.05 + v * 2.4;
+      L.halo.material.opacity = Math.min(1, v * 0.9);
+      const s = 1.4 + v * 1.4; L.halo.scale.set(s, s, 1);
+    });
+    matrixFlash -= dt;
+    const flashOn = mode !== "off" && (mode === "show" ? matrixFlash > 0 : (clock % (60 / BPM)) < 0.09);
+    for (const m of MATRIX) m.material.emissiveIntensity = flashOn ? 1.6 : 0;
+    if (mode !== "off") {
+      for (const p of packets) { p.t = (p.t + p.speed * dt + 1) % 1; p.m.position.copy(p.curve.getPoint(p.t)); }
+      knobCap.rotation.y += dt * 0.25;
+    }
+    controls.update();
+    renderer.render(scene, camera);
+    placeLabels(W, H);
+    requestAnimationFrame(frame);
+  }
+  for (const p of packets) p.m.position.copy(p.curve.getPoint(p.t));
+  requestAnimationFrame(frame);
+
+  // ---------- controls ----------
+  document.getElementById("m-show").onclick = () => { mode = "show"; setModeBtns(); };
+  document.getElementById("m-status").onclick = () => { mode = "status"; setModeBtns(); };
+  document.getElementById("m-off").onclick = () => { mode = "off"; setModeBtns(); };
+  const toggle = (id, fn) => { const b = document.getElementById(id); b.onclick = () => { const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(on)); fn(on); }; };
+  toggle("b-labels", (on) => labelsEl.classList.toggle("off", !on));
+  toggle("b-finger", (on) => { finger.visible = on; });
+  document.getElementById("b-reset").onclick = () => { camera.position.copy(HOME.pos); controls.target.copy(HOME.target); controls.update(); };
+})();
+</script>

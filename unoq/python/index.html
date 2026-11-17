@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Heartbeat</title>
+<style>
+  body{margin:0;height:100vh;display:grid;place-items:center;background:#111;color:#eee;font:16px system-ui,sans-serif;text-align:center}
+  #heart{font-size:30vmin;line-height:1;transition:transform .08s ease-out;color:#e33}
+  #heart.on{transform:scale(1.25)}
+  #bpm{font-size:12vmin;font-weight:700}
+  #meta{opacity:.6}
+</style></head>
+<body><div>
+  <div id="heart">&#10084;</div>
+  <div id="bpm">--</div>
+  <div id="meta">waiting for pulse&hellip;</div>
+</div>
+<script>
+const h = document.getElementById("heart"), b = document.getElementById("bpm"), m = document.getElementById("meta");
+function show(d){
+  b.textContent = d.bpm ? Math.round(d.bpm) + " BPM" : "--";
+  m.textContent = (d.source || "no source") + " · signal " + (d.quality*1000).toFixed(1) + "‰" + (d.motion ? " · MOTION" : "");
+}
+const es = new EventSource("events");
+es.addEventListener("bpm", e => show(JSON.parse(e.data)));
+es.addEventListener("beat", e => { show(JSON.parse(e.data)); h.classList.add("on"); setTimeout(() => h.classList.remove("on"), 120); });
+</script></body></html>

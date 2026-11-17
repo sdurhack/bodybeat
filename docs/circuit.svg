@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>Body Beat wiring</title>
+  <desc>Arduino UNO Q with five show LEDs on D2-D6 (220 ohm each) and a red pulse LED on D7 (3 x 37 ohm), Modulino Light, Movement and Knob on the Qwiic chain, a Nicla Vision on USB to the laptop, and the UNO Q talking to the laptop over WiFi.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5b6470"/>
+    </marker>
+    <g id="res">
+      <path d="M0 0 h10 l4 -7 l8 14 l8 -14 l8 14 l8 -14 l8 14 l4 -7 h10" fill="none" stroke="#2a2f36" stroke-width="2" stroke-linejoin="round"/>
+    </g>
+    <g id="glow">
+      <path d="M6 -16 l8 -8 m-4 0 h4 v4 M14 -12 l8 -8 m-4 0 h4 v4" fill="none" stroke="#2a2f36" stroke-width="1.4"/>
+    </g>
+  </defs>
+
+  <rect width="1000" height="660" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#16191d">Body Beat: wiring</text>
+  <text x="40" y="68" font-size="14" fill="#5b6470">Arduino UNO Q + Modulino Light, Movement, Knob · Nicla Vision · laptop</text>
+
+  <!-- ===== Qwiic chain ===== -->
+  <g font-size="13">
+    <path d="M180 140 V112 H320" fill="none" stroke="#2f6fd6" stroke-width="3"/>
+    <path d="M470 112 H490" stroke="#2f6fd6" stroke-width="3"/>
+    <path d="M640 112 H660" stroke="#2f6fd6" stroke-width="3"/>
+    <text x="186" y="104" fill="#2f6fd6" font-weight="600">Qwiic (I²C, Wire1)</text>
+
+    <rect x="320" y="88" width="150" height="62" rx="8" fill="#eef3fb" stroke="#2f6fd6" stroke-width="2"/>
+    <text x="395" y="112" text-anchor="middle" font-weight="700" fill="#16191d">Modulino Light</text>
+    <text x="395" y="130" text-anchor="middle" fill="#5b6470">fingertip pulse</text>
+    <text x="395" y="144" text-anchor="middle" fill="#5b6470" font-size="11">LTR381, 16-bit, 40 Hz</text>
+
+    <rect x="490" y="88" width="150" height="62" rx="8" fill="#eef3fb" stroke="#2f6fd6" stroke-width="2"/>
+    <text x="565" y="112" text-anchor="middle" font-weight="700" fill="#16191d">Modulino Movement</text>
+    <text x="565" y="130" text-anchor="middle" fill="#5b6470">melody energy, tilt</text>
+
+    <rect x="660" y="88" width="150" height="62" rx="8" fill="#eef3fb" stroke="#2f6fd6" stroke-width="2"/>
+    <text x="735" y="112" text-anchor="middle" font-weight="700" fill="#16191d">Modulino Knob</text>
+    <text x="735" y="130" text-anchor="middle" fill="#5b6470">turn: instrument</text>
+    <text x="735" y="144" text-anchor="middle" fill="#5b6470">press: breakdown</text>
+  </g>
+
+  <!-- ===== UNO Q board ===== -->
+  <g>
+    <rect x="60" y="140" width="240" height="380" rx="14" fill="#008184"/>
+    <rect x="60" y="140" width="240" height="380" rx="14" fill="none" stroke="#005c5e" stroke-width="2"/>
+    <text x="80" y="174" font-size="18" font-weight="700" fill="#ffffff">Arduino UNO Q</text>
+    <text x="80" y="194" font-size="12" fill="#cdeceb">MCU: sensors, LEDs, matrix</text>
+    <text x="80" y="210" font-size="12" fill="#cdeceb">Linux: band clock, pulse</text>
+    <rect x="160" y="132" width="40" height="14" rx="3" fill="#2f6fd6"/>
+    <text x="180" y="142" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">QWIIC</text>
+
+    <!-- LED matrix 13 x 8 -->
+    <g transform="translate(84 236)">
+      <rect x="-8" y="-8" width="132" height="84" rx="6" fill="#06494b"/>
+      <g fill="#ff5c5c">
+        <!-- "72" in 3x5 digits, plus the beat row -->
+        <rect x="9" y="0" width="7" height="7"/><rect x="18" y="0" width="7" height="7"/><rect x="27" y="0" width="7" height="7"/>
+        <rect x="27" y="9" width="7" height="7"/><rect x="27" y="18" width="7" height="7"/><rect x="27" y="27" width="7" height="7"/><rect x="27" y="36" width="7" height="7"/>
+        <rect x="45" y="0" width="7" height="7"/><rect x="54" y="0" width="7" height="7"/><rect x="63" y="0" width="7" height="7"/>
+        <rect x="63" y="9" width="7" height="7"/><rect x="45" y="18" width="7" height="7"/><rect x="54" y="18" width="7" height="7"/><rect x="63" y="18" width="7" height="7"/>
+        <rect x="45" y="27" width="7" height="7"/><rect x="45" y="36" width="7" height="7"/><rect x="54" y="36" width="7" height="7"/><rect x="63" y="36" width="7" height="7"/>
+        <rect x="0" y="63" width="115" height="5" rx="2" opacity="0.85"/>
+      </g>
+    </g>
+    <text x="84" y="336" font-size="12" fill="#cdeceb">LED matrix: tempo + beat</text>
+
+    <!-- header pins -->
+    <g fill="#d9b44a" stroke="#6d5410" stroke-width="1">
+      <rect x="292" y="224" width="12" height="12"/><rect x="292" y="264" width="12" height="12"/>
+      <rect x="292" y="304" width="12" height="12"/><rect x="292" y="344" width="12" height="12"/>
+      <rect x="292" y="384" width="12" height="12"/><rect x="292" y="424" width="12" height="12"/>
+      <rect x="292" y="474" width="12" height="12"/>
+    </g>
+  </g>
+
+  <!-- pin labels (inside the board edge) -->
+  <g font-size="13" font-weight="700" fill="#ffffff" text-anchor="end">
+    <text x="284" y="235">D2</text><text x="284" y="275">D3 ~</text><text x="284" y="315">D4</text>
+    <text x="284" y="355">D5 ~</text><text x="284" y="395">D6 ~</text><text x="284" y="435">D7</text>
+    <text x="284" y="485">GND</text>
+  </g>
+
+  <!-- ===== LED circuits: pin -> resistor -> LED -> GND rail ===== -->
+  <g stroke="#2a2f36" stroke-width="2" fill="none">
+    <!-- wires pin -> resistor -->
+    <path d="M304 230 H340"/><path d="M304 270 H340"/><path d="M304 310 H340"/>
+    <path d="M304 350 H340"/><path d="M304 390 H340"/><path d="M304 430 H340"/>
+    <!-- resistor -> LED -->
+    <path d="M412 230 H440"/><path d="M412 270 H440"/><path d="M412 310 H440"/>
+    <path d="M412 350 H440"/><path d="M412 390 H440"/><path d="M412 430 H440"/>
+    <!-- LED -> GND rail -->
+    <path d="M470 230 H560"/><path d="M470 270 H560"/><path d="M470 310 H560"/>
+    <path d="M470 350 H560"/><path d="M470 390 H560"/><path d="M470 430 H560"/>
+    <!-- GND rail back to the GND pin -->
+    <path d="M560 222 V480 H304" stroke-width="3"/>
+  </g>
+  <g fill="#2a2f36"><circle cx="560" cy="230" r="3.5"/><circle cx="560" cy="270" r="3.5"/><circle cx="560" cy="310" r="3.5"/>
+    <circle cx="560" cy="350" r="3.5"/><circle cx="560" cy="390" r="3.5"/><circle cx="560" cy="430" r="3.5"/></g>
+  <text x="566" y="500" font-size="12" fill="#5b6470">GND rail</text>
+
+  <!-- resistors -->
+  <use href="#res" x="340" y="230"/><use href="#res" x="340" y="270"/><use href="#res" x="340" y="310"/>
+  <use href="#res" x="340" y="350"/><use href="#res" x="340" y="390"/><use href="#res" x="340" y="430"/>
+  <g font-size="11" fill="#5b6470" text-anchor="middle">
+    <text x="376" y="218">220 Ω</text><text x="376" y="258">220 Ω</text><text x="376" y="298">220 Ω</text>
+    <text x="376" y="338">220 Ω</text><text x="376" y="378">220 Ω</text>
+    <text x="376" y="418" fill="#b8322a" font-weight="700">3 × 37 Ω</text>
+  </g>
+
+  <!-- LEDs: triangle (anode left) + bar (cathode), filled with the LED colour -->
+  <g stroke="#2a2f36" stroke-width="2" stroke-linejoin="round">
+    <g transform="translate(440 230)"><path d="M0 -10 L24 0 L0 10 Z" fill="#3b7cf0"/><path d="M26 -11 V11" fill="none"/><use href="#glow"/></g>
+    <g transform="translate(440 270)"><path d="M0 -10 L24 0 L0 10 Z" fill="#3b7cf0"/><path d="M26 -11 V11" fill="none"/><use href="#glow"/></g>
+    <g transform="translate(440 310)"><path d="M0 -10 L24 0 L0 10 Z" fill="#f2c230"/><path d="M26 -11 V11" fill="none"/><use href="#glow"/></g>
+    <g transform="translate(440 350)"><path d="M0 -10 L24 0 L0 10 Z" fill="#33b864"/><path d="M26 -11 V11" fill="none"/><use href="#glow"/></g>
+    <g transform="translate(440 390)"><path d="M0 -10 L24 0 L0 10 Z" fill="#33b864"/><path d="M26 -11 V11" fill="none"/><use href="#glow"/></g>
+    <g transform="translate(440 430)"><path d="M0 -10 L24 0 L0 10 Z" fill="#e5392f"/><path d="M26 -11 V11" fill="none"/><use href="#glow"/></g>
+  </g>
+
+  <!-- LED roles -->
+  <g font-size="12" fill="#16191d">
+    <text x="578" y="226"><tspan font-weight="700">blue</tspan> · beat / snare</text>
+    <text x="578" y="266"><tspan font-weight="700">blue</tspan> · minor key / snare</text>
+    <text x="578" y="306"><tspan font-weight="700">yellow</tspan> · major key / kick</text>
+    <text x="578" y="346"><tspan font-weight="700">green</tspan> · laptop link / hats</text>
+    <text x="578" y="386"><tspan font-weight="700">green</tspan> · Nicla data / hats</text>
+    <text x="578" y="426"><tspan font-weight="700" fill="#b8322a">red</tspan> · pulse light, always on</text>
+  </g>
+
+  <!-- fingertip: red LED shines through the finger onto the Light sensor -->
+  <path d="M470 418 C 500 360, 470 220, 410 156" fill="none" stroke="#e5392f" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arr)"/>
+  <text x="388" y="462" font-size="11" fill="#b8322a" font-weight="700">LED → fingertip → sensor</text>
+
+  <!-- ===== Laptop ===== -->
+  <g>
+    <rect x="740" y="210" width="220" height="130" rx="10" fill="#f4f5f7" stroke="#2a2f36" stroke-width="2"/>
+    <text x="760" y="238" font-size="16" font-weight="700" fill="#16191d">Laptop</text>
+    <text x="760" y="260" font-size="12" fill="#3d444d">conductor.py (Python)</text>
+    <text x="760" y="278" font-size="12" fill="#3d444d">Chrome: live.html</text>
+    <text x="760" y="296" font-size="12" fill="#3d444d">· face → key (face-api / ours)</text>
+    <text x="760" y="314" font-size="12" fill="#3d444d">· the only sound (Web Audio)</text>
+    <text x="760" y="330" font-size="12" fill="#3d444d">  or Spotify</text>
+  </g>
+
+  <!-- ===== Nicla Vision ===== -->
+  <g>
+    <rect x="760" y="430" width="180" height="100" rx="10" fill="#1d2228"/>
+    <circle cx="790" cy="462" r="11" fill="#0b0d10" stroke="#6b7480" stroke-width="2"/>
+    <circle cx="790" cy="462" r="4" fill="#3b6fd6"/>
+    <text x="812" y="460" font-size="15" font-weight="700" fill="#ffffff">Nicla Vision</text>
+    <text x="812" y="478" font-size="11" fill="#c6ccd4">camera 320×240</text>
+    <text x="776" y="500" font-size="11" fill="#c6ccd4">picture, motion → drums</text>
+    <text x="776" y="516" font-size="11" fill="#c6ccd4">mic: loudness, clap → fill</text>
+  </g>
+
+  <!-- links -->
+  <path d="M850 430 V340" stroke="#2a2f36" stroke-width="3" fill="none"/>
+  <text x="858" y="380" font-size="12" font-weight="700" fill="#16191d">USB-C</text>
+  <text x="858" y="396" font-size="11" fill="#5b6470">Web Serial: picture</text>
+  <text x="858" y="410" font-size="11" fill="#5b6470">+ state, 5×/s</text>
+
+  <path d="M304 176 H838 Q850 176 850 188 V206" fill="none" stroke="#7a52c7" stroke-width="2.5" stroke-dasharray="8 6" marker-end="url(#arr)" marker-start="url(#arr)"/>
+  <text x="590" y="170" font-size="12" font-weight="700" fill="#7a52c7">WiFi · UDP 7100 <tspan font-weight="400" font-size="11">pulse, beats, light show</tspan></text>
+
+  <!-- power -->
+  <path d="M120 520 V556" stroke="#2a2f36" stroke-width="3"/>
+  <text x="130" y="552" font-size="12" fill="#5b6470">USB-C power</text>
+
+  <!-- legend -->
+  <g transform="translate(40 600)" font-size="12" fill="#3d444d">
+    <path d="M0 0 H34" stroke="#2a2f36" stroke-width="2"/><text x="42" y="4">wire</text>
+    <path d="M100 0 H134" stroke="#2f6fd6" stroke-width="3"/><text x="142" y="4">Qwiic cable</text>
+    <path d="M240 0 H274" stroke="#7a52c7" stroke-width="2.5" stroke-dasharray="8 6"/><text x="282" y="4">wireless</text>
+    <text x="370" y="-14">~ = PWM pin (can fade). LED roles: status / during the light show.</text><text x="370" y="4">Each LED: pin → resistor → long leg (+); short leg (−) → GND.  D7 ≈ 12 mA, D2–D6 ≈ 6 mA at 3.3 V.</text>
+  </g>
+</svg>

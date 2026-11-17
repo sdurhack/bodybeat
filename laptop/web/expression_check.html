@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Expression model check</title>
+<!-- Headless check of live/expression.js against live/model/expression_model_check.json -->
+<pre id="out">running...</pre>
+<script type="module">
+import * as faceapi from "./live/vendor/face-api.esm.js";
+import { OwnExpressionNet, LABELS } from "./live/expression.js";
+const out = document.getElementById("out"), lines = [];
+try {
+  const tf = faceapi.tf;
+  if (!(await tf.setBackend("webgl").catch(() => false))) await tf.setBackend("cpu");
+  await tf.ready();
+  const net = await new OwnExpressionNet(tf, new URLSearchParams(location.search).get("model") || "live/model").load();
+  lines.push("backend " + tf.getBackend(), "self-check " + JSON.stringify(net.check));
+  // crop path: a grey face-sized patch on a canvas, box partly off the edge
+  const c = document.createElement("canvas"); c.width = 240; c.height = 320;
+  const g = c.getContext("2d"); g.fillStyle = "#808080"; g.fillRect(0, 0, 240, 320); g.fillStyle = "#d0a080"; g.fillRect(60, 80, 120, 150);
+  const t0 = performance.now();
+  const ex = await net.predict(c, { x: 150, y: 60, width: 120, height: 150 });
+  for (let i = 0; i < 20; i++) await net.predict(c, { x: 60, y: 80, width: 120, height: 150 });
+  const ms = (performance.now() - t0) / 21;
+  const sum = LABELS.reduce((s, k) => s + ex[k], 0);
+  lines.push("predict sum " + sum.toFixed(4) + " finite " + LABELS.every((k) => Number.isFinite(ex[k])), "ms/face " + ms.toFixed(1),
+             "tensors left " + tf.memory().numTensors);
+  lines.push(net.check && net.check.ok && Math.abs(sum - 1) < 1e-3 ? "RESULT PASS" : "RESULT FAIL");
+} catch (e) { lines.push("RESULT ERROR " + e.message); }
+out.textContent = lines.join("\n");
+</script>
