@@ -1,4 +1,4 @@
-name: bodybeat checks
+name: BodyBeats checks
 on:
   pull_request:
   push:

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
-  <title>bodybeat — wiring for the actual build</title>
+  <title>BodyBeats — wiring for the actual build</title>
   <desc>Arduino UNO Q with five show LEDs on D2-D6 (220 ohm each) and a red pulse LED on D7 (3 x 37 ohm), Modulino Light on the Qwiic connection, a Nicla Vision on USB to the laptop, and the UNO Q talking to the laptop over WiFi.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -16,7 +16,7 @@
   <rect width="1000" height="660" fill="#ffffff"/>
 
   <!-- title -->
-  <text x="40" y="44" font-size="26" font-weight="700" fill="#16191d">bodybeat: wiring</text>
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#16191d">BodyBeats: wiring</text>
   <text x="40" y="68" font-size="14" fill="#5b6470">UNO Q + Modulino Light · Nicla Vision · laptop</text>
 
   <!-- ===== Qwiic chain ===== -->

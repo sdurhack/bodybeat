@@ -1,4 +1,4 @@
-// bodybeat music engine: plain Web Audio, no libraries (nothing to download at the venue).
+// BodyBeats music engine: plain Web Audio, no libraries (nothing to download at the venue).
 //
 // A 16-step sequencer. Every part reads the latest musical state, so when an
 // actor goes offline its part simply keeps using the last values it sent.

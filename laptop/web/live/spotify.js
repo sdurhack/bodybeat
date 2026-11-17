@@ -1,4 +1,4 @@
-// bodybeat web: Spotify mode. Plays the user's own playlists on one of their Spotify Connect
+// BodyBeats web: Spotify mode. Plays the user's own playlists on one of their Spotify Connect
 // devices (phone, desktop app, speaker) and picks the playlist from how hard they're working.
 // See docs/spotify-api-integration-plan.md.
 //

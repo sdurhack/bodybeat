@@ -1,4 +1,4 @@
-# bodybeat
+# BodyBeats
 
 **An orchestra for your body.** Your heartbeat sets the tempo, your facial expression picks the key,
 and movements in front of the Nicla Vision camera shape the drums and melody. A clap triggers a drum fill.
@@ -7,7 +7,7 @@ Five coloured LEDs run a light show on the UNO Q's beat; a separate red LED illu
 
 Built at DurHack 2026.
 
-![bodybeat wiring, using only the actual hardware](docs/circuit.svg)
+![BodyBeats wiring, using only the actual hardware](docs/circuit.svg)
 
 There is also an interactive 3D model of the build: open [`docs/circuit3d.html`](docs/circuit3d.html) in a browser
 (download it first; GitHub shows it as source).
@@ -72,7 +72,7 @@ The key comes from our custom expression model, trained on FER2013 with Microsof
 | FER+ test faces | 7 expressions | 3 keys | Size |
 |---|---|---|---|
 | face-api expression model | 64.7% | 73.3% | 322 KB |
-| **bodybeat custom model** | **79.8%** | **83.3%** | **109 KB** |
+| **BodyBeats custom model** | **79.8%** | **83.3%** | **109 KB** |
 
 It runs in the browser on plain tf.js ops, checks itself against the notebook's answers when it loads, and falls back
 to face-api if anything is wrong. The **Expression model** menu can switch to face-api, or show both side by side.
@@ -80,7 +80,7 @@ Details and caveats: [`model/README.md`](model/README.md).
 
 ## Spotify (optional)
 
-Instead of the generated band, bodybeat can play your own Spotify playlists on a phone or desktop app:
+Instead of the generated band, BodyBeats can play your own Spotify playlists on a phone or desktop app:
 your heart rate picks Warm-up, Steady (from 100 BPM) or High energy (from 135 BPM), and the playlist changes a few
 seconds after you enter a new range. It never skips a track or overrides your pause.
 

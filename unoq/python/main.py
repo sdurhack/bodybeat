@@ -1,4 +1,4 @@
-"""bodybeat, actor 2: the UNO Q. Runs in App Lab on the board, or on a laptop with --sim.
+"""BodyBeats, actor 2: the UNO Q. Runs in App Lab on the board, or on a laptop with --sim.
 
 Senses:   Modulino Light + steady red LED = fingertip pulse (Bridge "ppg", raw 16-bit counts)
           Nicla camera state over UDP :7100 = room brightness (mood), person presence, motion
@@ -242,7 +242,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sim", action="store_true")
     a = ap.parse_args()
-    print("bodybeat unoq: udp :%d peers=%s default tempo %d BPM until a pulse locks" % (
+    print("BodyBeats unoq: udp :%d peers=%s default tempo %d BPM until a pulse locks" % (
         PORT, SEEDS or "(broadcast discovery)", band.DEFAULT_BPM), flush=True)
     server.start(HTTP_PORT)
     for fn in (band_loop, clock_loop, status_loop, discovery_loop):

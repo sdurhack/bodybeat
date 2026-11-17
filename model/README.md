@@ -1,4 +1,4 @@
-# bodybeat custom face-expression model
+# BodyBeats custom face-expression model
 
 A small custom model that reads the expression on a face, to replace face-api's expression model in
 `laptop/web/live.html`. face-api still finds the face; the custom model reads the expression on it.

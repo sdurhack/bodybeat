@@ -1,4 +1,4 @@
-"""bodybeat, actor 3: the laptop. Relays the band to the browser, which makes the sound.
+"""BodyBeats, actor 3: the laptop. Relays the band to the browser, which makes the sound.
 
     python conductor.py            real hardware; open http://localhost:8000
     python conductor.py --sim      fake UNO Q + Nicla, no hardware needed
@@ -324,7 +324,7 @@ def main():
     except OSError:
         pass
     ips = local_ips()
-    print("bodybeat conductor: open http://127.0.0.1:%d   (udp :%d)%s"
+    print("BodyBeats conductor: open http://127.0.0.1:%d   (udp :%d)%s"
           % (ARGS.http, ARGS.udp, "  SIM" if ARGS.sim else ""), flush=True)
     print("This laptop's IPs: %s  -> put the one on the UNO Q's network in its peers.txt (or BB_PEERS)"
           % (", ".join(ips) or "none found"), flush=True)

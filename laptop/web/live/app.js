@@ -1,4 +1,4 @@
-// bodybeat web: wires every sensor into the browser brain and the existing sound engine.
+// BodyBeats web: wires every sensor into the browser brain and the existing sound engine.
 // Open http://localhost:8000/live.html (served by laptop/conductor.py). Chrome or Edge:
 // Web Serial is Chromium-only.
 import * as faceapi from "./vendor/face-api.esm.js";

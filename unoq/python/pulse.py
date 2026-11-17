@@ -1,4 +1,4 @@
-"""Fingertip pulse from the Modulino Light (LTR381) for the bodybeat.
+"""Fingertip pulse from the Modulino Light (LTR381) for BodyBeats.
 
 The MCU sketch sends one Bridge "ppg" call per FRESH sensor measurement
 (it polls the chip's data-ready flag), with the MCU timestamp in ms:
