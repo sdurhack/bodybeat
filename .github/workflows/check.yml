@@ -1,0 +1,26 @@
+name: bodybeat checks
+on:
+  pull_request:
+  push:
+    branches:
+      - fix/bodybeat-actual-hardware
+
+jobs:
+  software-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Python syntax
+        run: python -m compileall -q unoq/python laptop tests
+      - name: Band and networking tests
+        run: python tests/test_band.py
+      - name: Pulse processing tests
+        run: python tests/test_pulse.py
+      - name: Browser logic tests
+        run: node tests/test_web_live.mjs
