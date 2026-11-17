@@ -118,8 +118,13 @@ The tests need no hardware and no packages.
 
 ## Credits
 
-Made at DurHack 2026 by the Body Beat team. Thanks to Melanie for the team's first face-mood model, which shaped how
-the key follows your face. The hackathon history lives in [sdurhack/repo1](https://github.com/sdurhack/repo1).
+Made at DurHack 2026 by:
+
+- **Melanie**: the face-expression model
+- **Letmela**: the band, and the hardware–software integration
+- **Manasseh Portuphy**: the circuit, and the hardware–software integration
+
+The hackathon history lives in [sdurhack/repo1](https://github.com/sdurhack/repo1).
 
 Open-source work this builds on: [face-api](https://github.com/vladmandic/face-api) (MIT), Microsoft's
 [FER+](https://github.com/microsoft/FERPlus) labels (MIT) on the FER2013 faces, and the POS remote-pulse method
