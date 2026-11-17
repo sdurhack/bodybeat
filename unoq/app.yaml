@@ -1,5 +1,5 @@
-name: Body Beat
-description: "Body Beat, UNO Q: fingertip pulse (Modulino Light + red LED) sets the tempo, Movement sets melody energy, Knob picks the instrument, five LEDs run the light show. Talks to the laptop and the Nicla over UDP 7100."
+name: bodybeat
+description: "bodybeat, an orchestra for your body. UNO Q: fingertip pulse (Modulino Light + red LED) sets the tempo, five LEDs run the light show on the beat. Talks to the laptop and the Nicla over UDP 7100."
 ports:
   - 7000
 bricks: []

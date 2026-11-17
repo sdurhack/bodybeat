@@ -1,4 +1,4 @@
-// Body Beat web: the breadboard light show. Five LEDs in a row, a "sandwich":
+// bodybeat web: the breadboard light show. Five LEDs in a row, a "sandwich":
 //     D2 blue · D3 blue · D4 yellow · D5 green · D6 green
 // The same choreography runs on the UNO Q's MCU (unoq/sketch/sketch.ino, lightStep/lightAmbient)
 // so the page mirror and the real LEDs agree. Keep the two in step if you change one.

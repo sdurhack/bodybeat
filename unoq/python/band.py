@@ -1,4 +1,4 @@
-"""Body Beat: the musical decisions and the peer-to-peer link layer.
+"""bodybeat: the musical decisions and the peer-to-peer link layer.
 
 Pure Python, no hardware and no dependencies, so it runs on the UNO Q, on a
 laptop (the conductor's --sim actors use it) and in tests.

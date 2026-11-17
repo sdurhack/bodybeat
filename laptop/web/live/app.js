@@ -1,4 +1,4 @@
-// Body Beat web: wires every sensor into the browser brain and the existing sound engine.
+// bodybeat web: wires every sensor into the browser brain and the existing sound engine.
 // Open http://localhost:8000/live.html (served by laptop/conductor.py). Chrome or Edge:
 // Web Serial is Chromium-only.
 import * as faceapi from "./vendor/face-api.esm.js";
@@ -60,10 +60,10 @@ function loadFaceModel() {
 const faceOpts = () => new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 });
 const topExpr = (ex) => Object.entries(ex).sort((a, b) => b[1] - a[1])[0];
 
-// ---- which expression model: face-api's, ours (live/expression.js), or both side by side ------
-// face-api always finds the face. Ours is the default; face-api answers until ours has loaded, and
+// ---- which expression model: face-api's, the custom one (live/expression.js), or both side by side
+// face-api always finds the face. The custom model is the default; face-api answers until it has loaded, and
 // takes over for good if our files are missing or fail their self-check. "compare": face-api
-// decides the key, and ours runs on the same face box and is shown next to it.
+// decides the key, and the custom model runs on the same face box and is shown next to it.
 let exprMode = "ours";
 try { const m = localStorage.getItem("bb.exprModel"); if (["faceapi", "ours", "compare"].includes(m)) exprMode = m; } catch {}
 let ownNet = null, ownLoad = null;
@@ -73,13 +73,13 @@ function ensureOwn() {
     const c = net.check, r = net.info && net.info["ours (exported, 8-bit)"];
     if (c && !c.ok) throw new Error(`self-check failed (off by ${c.maxDiff.toFixed(3)})`);
     ownNet = net;
-    log("our expression model loaded" + (c ? ", self-check ok" : "") +
+    log("custom expression model loaded" + (c ? ", self-check ok" : "") +
         (r ? `, test accuracy ${pct(r.acc7)} on 7 expressions, ${pct(r.acc3)} on the 3 keys` : ""));
     return net;
   }).catch((e) => {
     // fall back for this visit only (not saved), so fixed files are picked up on the next reload
     ownLoad = null; ownNet = null; exprMode = "faceapi"; $("exprmodel").value = "faceapi"; showCmp();
-    log("our expression model not used, face-api instead: " + e.message);
+    log("custom expression model not used, face-api instead: " + e.message);
   });
   return ownLoad;
 }
@@ -97,10 +97,10 @@ const keyOf = (ex) => {
 function showCmp() {
   const parts = [];
   if (exprMode === "compare") parts.push(cmp.n ? `same key as face-api on ${pct(cmp.same / cmp.n)} of ${cmp.n} faces` : "waiting for a face...");
-  if (exprMode !== "faceapi" && cmp.timed) parts.push(`ours ${cmp.ms.toFixed(1)} ms per face`);
+  if (exprMode !== "faceapi" && cmp.timed) parts.push(`custom model ${cmp.ms.toFixed(1)} ms per face`);
   $("exprcmp").textContent = parts.join(" · ");
 }
-// one face: face-api finds it; face-api and/or our model read the expression
+// one face: face-api finds it; face-api and/or the custom model read the expression
 async function readFace(input, opts) {
   const ours = exprMode !== "faceapi" && ownNet;
   let box = null, fa = null;
@@ -117,7 +117,7 @@ async function readFace(input, opts) {
   }
   const use = exprMode === "ours" && own ? own : fa ?? own;
   const say = (ex) => { const t = topExpr(ex); return `${t[0]} ${pct(t[1])}`; };
-  const text = fa && own ? `face-api ${say(fa)} · ours ${say(own)}` : (own ? "ours: " : "") + say(use);
+  const text = fa && own ? `face-api ${say(fa)} · custom ${say(own)}` : (own ? "custom: " : "") + say(use);
   return { box, expressions: use, text };
 }
 

@@ -1,6 +1,6 @@
 # bodybeat
 
-**A band powered by your body.** Your heartbeat sets the tempo, your facial expression picks the key,
+**An orchestra for your body.** Your heartbeat sets the tempo, your facial expression picks the key,
 and movements in front of the Nicla Vision camera shape the drums and melody. A clap triggers a drum fill.
 The Arduino UNO Q, one Modulino Light, the Nicla Vision and a laptop browser each play a part.
 Five coloured LEDs run a light show on the UNO Q's beat; a separate red LED illuminates your fingertip.
@@ -63,16 +63,16 @@ python laptop/conductor.py --peer <UNO Q IP>   # WiFi that blocks broadcasts
 Open **http://127.0.0.1:8000** in Chrome or Edge, click **Start the band**, then **Connect Nicla (USB)**. Place a fingertip between the red LED and Light sensor; try facial expressions, camera movement and a clap.
 Optional: **Start mic**, **Send clock**, **Start webcam** (a webcam pulse stands in when there is no finger pulse).
 
-## The face model
+## The custom face model
 
-The key comes from our own expression model, trained on FER2013 with Microsoft's FER+ labels
+The key comes from our custom expression model, trained on FER2013 with Microsoft's FER+ labels
 ([`model/train_expression.ipynb`](model/train_expression.ipynb), about 20 minutes on a free Colab GPU).
-[face-api](https://github.com/vladmandic/face-api) finds the face; our model reads the expression on it.
+[face-api](https://github.com/vladmandic/face-api) finds the face; the custom model reads the expression on it.
 
 | FER+ test faces | 7 expressions | 3 keys | Size |
 |---|---|---|---|
 | face-api expression model | 64.7% | 73.3% | 322 KB |
-| **Body Beat model** | **79.8%** | **83.3%** | **109 KB** |
+| **bodybeat custom model** | **79.8%** | **83.3%** | **109 KB** |
 
 It runs in the browser on plain tf.js ops, checks itself against the notebook's answers when it loads, and falls back
 to face-api if anything is wrong. The **Expression model** menu can switch to face-api, or show both side by side.
@@ -80,7 +80,7 @@ Details and caveats: [`model/README.md`](model/README.md).
 
 ## Spotify (optional)
 
-Instead of the generated band, Body Beat can play your own Spotify playlists on a phone or desktop app:
+Instead of the generated band, bodybeat can play your own Spotify playlists on a phone or desktop app:
 your heart rate picks Warm-up, Steady (from 100 BPM) or High energy (from 135 BPM), and the playlist changes a few
 seconds after you enter a new range. It never skips a track or overrides your pause.
 
@@ -104,7 +104,7 @@ seconds after you enter a new range. It never skips a track or overrides your pa
 ```
 laptop/conductor.py        relays the band to the browser (HTTP :8000, UDP 7100)
 laptop/web/live.html       the band: sound, face model, Nicla over Web Serial, Spotify
-laptop/web/live/           fusion.js (decisions), engine.js (sound), expression.js (our model), ...
+laptop/web/live/           fusion.js (decisions), engine.js (sound), expression.js (custom model), ...
 unoq/sketch/               UNO Q MCU: sensors, LED matrix, light show
 unoq/python/               UNO Q Linux: band clock, pulse detection, networking
 nicla_web/                 Nicla Vision sketch: picture, motion, mic

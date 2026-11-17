@@ -1,4 +1,4 @@
-// Body Beat web: the Music card. Three levels (Warm-up, Steady, High energy) from your heart
+// bodybeat web: the Music card. Three levels (Warm-up, Steady, High energy) from your heart
 // rate, with BPM ranges you pick and Demo buttons that force a heart rate in a range.
 // Generated band (default, always works) or Spotify (the user's own playlist per level). Spotify plays on one of the user's Connect devices;
 // the generated band keeps its clock (MIDI out, UNO Q sync) but is muted while Spotify is actually

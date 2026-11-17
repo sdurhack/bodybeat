@@ -1,4 +1,4 @@
-"""Body Beat, actor 2: the UNO Q. Runs in App Lab on the board, or on a laptop with --sim.
+"""bodybeat, actor 2: the UNO Q. Runs in App Lab on the board, or on a laptop with --sim.
 
 Senses:   Modulino Light + steady red LED = fingertip pulse (Bridge "ppg", raw 16-bit counts)
           Nicla camera state over UDP :7100 = room brightness (mood), person presence, motion

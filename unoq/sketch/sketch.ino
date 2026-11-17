@@ -1,6 +1,6 @@
-// Body Beat: UNO Q sketch (the MCU half of the board; python/main.py is the Linux half).
+// bodybeat: UNO Q sketch (the MCU half of the board; python/main.py is the Linux half).
 //
-// Body Beat is a band that plays along with your body. This board reads a fingertip pulse,
+// bodybeat is an orchestra for your body. This board reads a fingertip pulse,
 // keeps the band's clock, and runs a five-LED light show on the beat.
 //
 // What this sketch does (all decisions are made in python/, so tuning needs no reflash):

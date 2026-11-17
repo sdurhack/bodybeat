@@ -1,4 +1,4 @@
-"""Tests for the Body Beat decisions + link layer. Run: python tests/test_band.py"""
+"""Tests for the bodybeat decisions + link layer. Run: python tests/test_band.py"""
 import os
 import sys
 

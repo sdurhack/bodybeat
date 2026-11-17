@@ -1,7 +1,7 @@
-# Our own face-expression model
+# bodybeat custom face-expression model
 
-A small model of our own that reads the expression on a face, to replace face-api's expression model in
-`laptop/web/live.html`. face-api still finds the face; our model reads the expression on it.
+A small custom model that reads the expression on a face, to replace face-api's expression model in
+`laptop/web/live.html`. face-api still finds the face; the custom model reads the expression on it.
 
 ## What it is
 
@@ -30,14 +30,14 @@ The notebook runs **both** models on the same FER+ test faces (3,500+ faces neit
 |---|---|
 | 7 expressions | top expression matches the voters' top expression |
 | 3 key groups | the key it would pick (C major / D dorian / A minor) matches the voters'. This is the number that matters for the band |
-| agreement | how often ours and face-api pick the same key |
+| agreement | how often the custom model and face-api pick the same key |
 
 Then it is checked on real faces:
 
 1. Run the conductor, open http://127.0.0.1:8000/live.html.
 2. Set **Expression model** (Nicla card) to **Compare both**. face-api still decides the key; the page shows both answers
-   and "same key as face-api on N% of M faces", plus our model's milliseconds per face.
-3. Switch to **Ours** only when it holds up. If the model files are missing or fail their self-check, the page
+   and "same key as face-api on N% of M faces", plus the custom model's milliseconds per face.
+3. Switch to **Custom model** only when it holds up. If the model files are missing or fail their self-check, the page
    says so in the log and goes back to face-api by itself.
 
 `laptop/web/expression_check.html` checks the browser code against the notebook: it runs 8 test faces through
@@ -50,13 +50,13 @@ FER+ test set (PrivateTest, faces neither model trained on), trained 2026-11-17 
 | | 7 expressions | 3 key groups | model file |
 |---|---|---|---|
 | face-api `faceExpressionNet` | 64.7% | 73.3% | 322 KB |
-| **ours** (8-bit, + mirrored pass) | **79.8%** | **83.3%** | **109 KB** |
+| **custom model** (8-bit, + mirrored pass) | **79.8%** | **83.3%** | **109 KB** |
 
-Per expression (ours / face-api): neutral 90 / 55, happy 86 / 82, surprised 83 / 77, angry 81 / 60,
+Per expression (custom / face-api): neutral 90 / 55, happy 86 / 82, surprised 83 / 77, angry 81 / 60,
 sad 53 / 55, fearful 34 / 45, disgusted 9 / 47. The two pick the same key on 77% of test faces.
 
 Fair warning on these numbers: face-api was trained on larger colour photos, so 48x48 grey faces handicap it,
-and ours was trained on the same kind of faces it is tested on. Ours is weak on disgusted and fearful (rare in
+and the custom model was trained on the same kind of faces it is tested on. It is weak on disgusted and fearful (rare in
 FER+), but both count as A minor, like angry and sad, so the key barely suffers. The live comparison on real faces
 through the Nicla is the test that decides.
 

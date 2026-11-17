@@ -132,7 +132,7 @@
     <text x="760" y="238" font-size="16" font-weight="700" fill="#16191d">Laptop</text>
     <text x="760" y="260" font-size="12" fill="#3d444d">conductor.py (Python)</text>
     <text x="760" y="278" font-size="12" fill="#3d444d">Chrome: live.html</text>
-    <text x="760" y="296" font-size="12" fill="#3d444d">· face → key (face-api / ours)</text>
+    <text x="760" y="296" font-size="12" fill="#3d444d">· face → key (custom model)</text>
     <text x="760" y="314" font-size="12" fill="#3d444d">· the only sound (Web Audio)</text>
     <text x="760" y="330" font-size="12" fill="#3d444d">  or Spotify</text>
   </g>

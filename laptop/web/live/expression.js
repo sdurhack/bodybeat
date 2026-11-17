@@ -1,4 +1,4 @@
-// Body Beat's own face-expression model, trained in model/train_expression.ipynb
+// bodybeat's custom face-expression model, trained in model/train_expression.ipynb
 // (FER2013 faces + Microsoft's FER+ labels). It gives the same 7 labels as face-api, so
 // fusion.js and the UNO Q don't care which model answered.
 //

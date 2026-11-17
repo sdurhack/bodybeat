@@ -1,6 +1,6 @@
-// Body Beat: Nicla Vision sketch (no AI model on the board).
+// bodybeat: Nicla Vision sketch (no AI model on the board).
 //
-// Body Beat is a band that plays along with your body. The Nicla is the band's eye and ear:
+// bodybeat is an orchestra for your body. The Nicla is the band's eye and ear:
 //   * Picture   the full 320x240 colour frame over USB, sent only when the laptop asks by writing
 //               'P'. The laptop's page (laptop/web/live.html) shows it and reads the face's
 //               expression on it, which picks the key. Pull, not push: a picture is never left
@@ -259,7 +259,7 @@ void setup() {
   PDM.onReceive(onMic);
   haveMic = PDM.begin(1, 16000);
   Serial.println(haveMic ? "mic ok 16 kHz" : "mic FAILED");
-  Serial.println("Body Beat Nicla: camera picture + motion + mic, no on-board model");
+  Serial.println("bodybeat Nicla: camera picture + motion + mic, no on-board model");
 
   if (strlen(WIFI_SSID)) {
     for (int i = 0; i < 3 && WiFi.status() != WL_CONNECTED; i++) {

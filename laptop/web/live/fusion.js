@@ -1,4 +1,4 @@
-// Body Beat web: the browser "brain" that fuses every sensor into one musical state.
+// bodybeat web: the browser "brain" that fuses every sensor into one musical state.
 // Pure JS, no DOM: tests/test_web_live.mjs runs it in Node.
 //
 // Sources (each optional, each judged fresh by OUR receipt time):

@@ -1,4 +1,4 @@
-<title>Body Beat Circuit 3D</title>
+<title>bodybeat Circuit 3D</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
@@ -60,7 +60,7 @@ td.pin { font-family: var(--font-mono); white-space: nowrap; }
 <div class="wrap">
   <header>
     <div>
-      <h1>Body Beat circuit</h1>
+      <h1>bodybeat circuit</h1>
       <p class="sub">Arduino UNO Q with one Modulino Light, six LEDs on a breadboard and a Nicla Vision, wired to the laptop that plays the band. Drag to turn, scroll or pinch to zoom.</p>
     </div>
     <div class="controls">
@@ -318,10 +318,10 @@ td.pin { font-family: var(--font-mono); white-space: nowrap; }
   const kb = new THREE.Mesh(new THREE.BoxGeometry(7.6, 0.04, 2.6), std(0x2b2f33)); kb.position.set(0, 0.37, -0.3); lapGroup.add(kb);
   const screenTex = canvasTex(900, 580, (g, W, H) => {
     g.fillStyle = "#0f1416"; g.fillRect(0, 0, W, H);
-    g.fillStyle = "#39c2c4"; g.font = "700 46px Space Grotesk, Arial"; g.fillText("Body Beat", 40, 72);
+    g.fillStyle = "#39c2c4"; g.font = "700 46px Space Grotesk, Arial"; g.fillText("bodybeat", 40, 72);
     g.fillStyle = "#97a3a8"; g.font = "500 26px Inter, Arial"; g.fillText("live.html · the band's only sound", 40, 112);
     const tile = (x, y, k, v) => { g.fillStyle = "#1a2124"; g.fillRect(x, y, 250, 120); g.fillStyle = "#97a3a8"; g.font = "500 22px Inter, Arial"; g.fillText(k, x + 18, y + 38); g.fillStyle = "#e8ecea"; g.font = "700 40px Space Grotesk, Arial"; g.fillText(v, x + 18, y + 92); };
-    tile(40, 150, "Heart", "72 BPM"); tile(320, 150, "Key", "A minor"); tile(600, 150, "Face", "sad · ours");
+    tile(40, 150, "Heart", "72 BPM"); tile(320, 150, "Key", "A minor"); tile(600, 150, "Face", "sad · custom");
     g.strokeStyle = "#39c2c4"; g.lineWidth = 4; g.beginPath();
     for (let x = 0; x <= 820; x += 4) { const t = x / 820 * 6 * Math.PI; g.lineTo(40 + x, 420 - Math.sin(t) * 40 * Math.exp(-(((t % (2 * Math.PI)) - 1) ** 2))); }
     g.stroke();
