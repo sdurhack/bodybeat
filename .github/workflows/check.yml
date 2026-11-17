@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - fix/bodybeat-actual-hardware
+      - main
 
 jobs:
   software-tests:
